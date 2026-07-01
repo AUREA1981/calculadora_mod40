@@ -889,20 +889,37 @@ function documentoHTML(c) {
     </tr>`;
 
   return `
-  <div style="width:100%;margin:0 auto;background:#ffffff;color:#0D0D0D;font-family:Arial, sans-serif;border:1px solid #d8d3c4;">
-    <div style="background:#0D0D0D;padding:26px 36px;display:flex;align-items:center;gap:16px;border-bottom:4px solid #C9A84C;">
-          <img src="logo-aurea.jpeg" alt="Áurea" style="width:56px;height:56px;border-radius:50%;border:2px solid #C9A84C;object-fit:cover;">
-      <div>
-        <div style="font-family:Georgia, serif;font-size:24px;letter-spacing:1.5px;color:#C9A84C;">ÁUREA</div>
-        <div style="font-size:12px;letter-spacing:2.5px;color:#E8C97A;">ASESORÍA INTEGRAL</div>
-      </div>
-      <div style="margin-left:auto;text-align:right;">
-        <div style="font-size:14px;color:#E8C97A;">Proyección de pensión IMSS</div>
-        <div style="font-size:12px;color:#8a8064;margin-top:3px;">Folio: ${c.FOLIO || '—'}</div>
-      </div>
-    </div>
+  <table class="imp-doc" style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr><td>
+        <div class="imp-header">
+          <img src="logo-aurea.jpeg" alt="Áurea" style="width:44px;height:44px;border-radius:50%;border:2px solid #C9A84C;object-fit:cover;">
+          <div>
+            <div style="font-family:Georgia, serif;font-size:19px;letter-spacing:1.5px;color:#C9A84C;">ÁUREA</div>
+            <div style="font-size:10px;letter-spacing:2.2px;color:#E8C97A;">ASESORÍA INTEGRAL</div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <div style="font-size:12px;color:#E8C97A;">Proyección de pensión IMSS</div>
+            <div style="font-size:11px;color:#8a8064;margin-top:2px;">Folio: ${c.FOLIO || '—'} &nbsp;·&nbsp; ${c.CLIENTE || ''}</div>
+          </div>
+        </div>
+      </td></tr>
+    </thead>
 
-    <div style="padding:26px 36px 6px;">
+    <tfoot>
+      <tr><td>
+        <div class="imp-footer">
+          <div style="font-size:10px;color:#8a8064;">Áurea Asesoría Integral · Documento generado automáticamente</div>
+          <div style="font-size:10px;color:#C9A84C;">${c.FECHACAPTURA || new Date().toLocaleDateString('es-MX')}</div>
+        </div>
+      </td></tr>
+    </tfoot>
+
+    <tbody>
+      <tr><td>
+  <div class="imp-body" style="width:100%;background:#ffffff;color:#0D0D0D;font-family:Arial, sans-serif;">
+
+    <div style="padding:0 36px 6px;">
       <div style="font-size:20px;font-weight:bold;color:#0D0D0D;">${c.CLIENTE || ''}</div>
       <div style="font-size:13px;color:#6b6558;margin-top:3px;">NSS ${c.NSS || '—'} &nbsp;·&nbsp; CURP ${c.CURP || '—'} &nbsp;·&nbsp; Emitido ${c.FECHACAPTURA || new Date().toLocaleDateString('es-MX')}</div>
     </div>
@@ -1023,11 +1040,10 @@ function documentoHTML(c) {
       </tr>
     </table>
 
-    <div style="background:#0D0D0D;padding:12px 36px;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:10px;color:#8a8064;">Áurea Asesoría Integral · Documento generado automáticamente</div>
-      <div style="font-size:10px;color:#C9A84C;">${c.FECHACAPTURA || new Date().toLocaleDateString('es-MX')}</div>
-    </div>
   </div>
+      </td></tr>
+    </tbody>
+  </table>
   `;
 }
 

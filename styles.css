@@ -148,7 +148,7 @@ aside .search-box input:focus { border-color: var(--verde-medio); }
 /* ══════════════════════════════════════════════════════════
    ÁREA PRINCIPAL (main)
    ══════════════════════════════════════════════════════════ */
-  main { flex: 1; padding: 2rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
+main { flex: 1; padding: 2rem; overflow-y: auto; }
 
 /* ── Pantalla de bienvenida ── */
 .welcome {
@@ -552,7 +552,26 @@ header .brand-subtitle {
   }
   @page {
     size: auto;
-    margin: 10mm;
+    margin: 10mm 0mm;
+  }
+  .imp-doc thead { display: table-header-group; }
+  .imp-doc tfoot { display: table-footer-group; }
+  .imp-header {
+    background: #0D0D0D;
+    padding: 12px 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 3px solid #C9A84C;
+    margin-bottom: 14px;
+  }
+  .imp-footer {
+    background: #0D0D0D;
+    padding: 8px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
   }
 }
 
@@ -646,22 +665,24 @@ header .brand-subtitle {
 }
 
 
-html, body { height: 100%; }
-body {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100dvh;  
-  overflow: hidden;  
+@media (min-width: 701px) {
+  html, body { height: 100%; }
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  header { flex-shrink: 0; }
+  .app {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+  }
+  aside { overflow-y: auto; }
+  main { flex: 1; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
+  .site-footer { flex-shrink: 0; padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); }
 }
-header { flex-shrink: 0; }
-.app {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-}
-aside { overflow-y: auto; }
-main { flex: 1; overflow-y: auto; }
-.site-footer { flex-shrink: 0; padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); }
 
 
