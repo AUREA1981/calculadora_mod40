@@ -893,14 +893,14 @@ function documentoHTML(c) {
     <thead>
       <tr><td>
         <div class="imp-header">
-          <img src="logo-aurea.jpeg" alt="Áurea" style="width:44px;height:44px;border-radius:50%;border:2px solid #C9A84C;object-fit:cover;">
+          <img src="logo-aurea.jpeg" alt="Áurea" style="width:56px;height:56px;border-radius:50%;border:2px solid #C9A84C;object-fit:cover;">
           <div>
-            <div style="font-family:Georgia, serif;font-size:19px;letter-spacing:1.5px;color:#C9A84C;">ÁUREA</div>
-            <div style="font-size:10px;letter-spacing:2.2px;color:#E8C97A;">ASESORÍA INTEGRAL</div>
+            <div style="font-family:Georgia, serif;font-size:24px;letter-spacing:1.5px;color:#C9A84C;">ÁUREA</div>
+            <div style="font-size:12px;letter-spacing:2.5px;color:#E8C97A;">ASESORÍA INTEGRAL</div>
           </div>
           <div style="margin-left:auto;text-align:right;">
-            <div style="font-size:12px;color:#E8C97A;">Proyección de pensión IMSS</div>
-            <div style="font-size:11px;color:#8a8064;margin-top:2px;">Folio: ${c.FOLIO || '—'} &nbsp;·&nbsp; ${c.CLIENTE || ''}</div>
+            <div style="font-size:14px;color:#E8C97A;">Proyección de pensión IMSS</div>
+            <div style="font-size:12px;color:#8a8064;margin-top:3px;">Folio: ${c.FOLIO || '—'}</div>
           </div>
         </div>
       </td></tr>

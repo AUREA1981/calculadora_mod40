@@ -552,26 +552,35 @@ header .brand-subtitle {
   }
   @page {
     size: auto;
-    margin: 10mm 0mm;
+    margin: 10mm;
   }
   .imp-doc thead { display: table-header-group; }
   .imp-doc tfoot { display: table-footer-group; }
   .imp-header {
     background: #0D0D0D;
-    padding: 12px 30px;
+    padding: 26px 36px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    border-bottom: 3px solid #C9A84C;
-    margin-bottom: 14px;
+    gap: 16px;
+    border: 1px solid #d8d3c4;
+    border-bottom: 4px solid #C9A84C;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
   }
   .imp-footer {
     background: #0D0D0D;
-    padding: 8px 30px;
+    padding: 12px 36px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 14px;
+    border: 1px solid #d8d3c4;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    margin-top: 0;
+  }
+  .imp-body {
+    border-left: 1px solid #d8d3c4;
+    border-right: 1px solid #d8d3c4;
   }
 }
 
