@@ -119,7 +119,7 @@ function calcular(c) {
   const fechaPension    = c.PensionFecha    ? new Date(c.PensionFecha)    : null;
 
   const diasEntre = (a, b) => Math.round((a - b) / (1000 * 60 * 60 * 24));
-  
+
   // ════════════════════════════════════════════════════════════
   // PENSIÓN DIRECTA
   // ════════════════════════════════════════════════════════════
@@ -763,7 +763,7 @@ function preCalc() {
       set('p_CostoSinInteres', fmt(r.CostoSinInteres));
       set('p_Interes',         fmt(r.Interes));
       set('p_CostoTotal',      fmt(r.CostoTotal));
-      set('p_AforeMostrar',    fmt(tmp.AforeCantidad));
+      set('p_AforeMostrar',    fmt(numLimpio(tmp.AforeCantidad)));      
       set('p_FondeoTotal',     fmt(r.FondeoTotal));
       set('p_PlanA_fondeo',    fmt(r.PlanA.fondeoTotal));
       set('p_PlanA_costo',     fmt(r.PlanA.costo));
