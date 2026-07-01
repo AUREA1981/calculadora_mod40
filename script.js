@@ -104,13 +104,13 @@ function calcular(c) {
     return 100;
   }
 
-  // ── Entradas del formulario ───────────────────────────────
-  const salario       = parseFloat(c.Salario)        || 0;  // Promedio Salario (diario)
+// ── Entradas del formulario ───────────────────────────────
+  const salario       = numLimpio(c.Salario);              // Promedio Salario (diario)
   const semanas       = parseInt(c.NoSemanas)         || 0;  // No. Semanas
-  const aforeCant     = parseFloat(c.AforeCantidad)   || 0;  // Cantidad de AFORE
-  const ajuste        = parseFloat(c.AjusteManual)    || 0;  // Ajuste
-  const ayudaDesempleo= parseFloat(c.AyudaDesempleo)  || 0;  // $ Ayuda por Desempleo
-  const aportacion    = parseFloat(c.AportacionCliente)|| 0; // Aportación del cliente
+  const aforeCant     = numLimpio(c.AforeCantidad);        // Cantidad de AFORE
+  const ajuste        = numLimpio(c.AjusteManual);         // Ajuste
+  const ayudaDesempleo= numLimpio(c.AyudaDesempleo);       // $ Ayuda por Desempleo
+  const aportacion    = numLimpio(c.AportacionCliente);    // Aportación del cliente
   const moratorios    = parseFloat(c.MoratoriosPct)   || 0;  // % Moratorios (capturado)
 
   const fechaNacimiento = c.FechaNacimiento ? new Date(c.FechaNacimiento) : null;
@@ -119,7 +119,7 @@ function calcular(c) {
   const fechaPension    = c.PensionFecha    ? new Date(c.PensionFecha)    : null;
 
   const diasEntre = (a, b) => Math.round((a - b) / (1000 * 60 * 60 * 24));
-
+  
   // ════════════════════════════════════════════════════════════
   // PENSIÓN DIRECTA
   // ════════════════════════════════════════════════════════════
