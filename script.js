@@ -953,6 +953,53 @@ function documentoHTML(c) {
       </table>
     </div>
 
+    <div style="margin:0 36px 20px;">
+      <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Desglose de cálculo</div>
+      <div style="display:flex;gap:24px;margin-bottom:14px;">
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">PENSIÓN DIRECTA</div>
+          <table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr><td style="color:#6b6558;padding:3px 0;">Edad</td><td style="text-align:right;color:#0D0D0D;">${c.Edad ? c.Edad + ' años' : '—'}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Salario mínimo del año</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._SalarioMinimo)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Pensión al salario</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.PensionAlSalario)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Pensión directa total</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.PensionDirectaTotal)}</td></tr>
+          </table>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">PENSIÓN MEJORADA</div>
+          <table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr><td style="color:#6b6558;padding:3px 0;">Meses</td><td style="text-align:right;color:#0D0D0D;">${c._Meses ?? '—'} meses</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Año de baja</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._AnioBaja || '—'}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">UMA</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._UMA)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Edad mejorada</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._NuevaEdad ? c._NuevaEdad + ' años' : '—'}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Semanas mejoradas</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._NuevaSemanass ?? '—'} sem.</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Salario mejorado</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._NuevoSalario)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Pensión mejorada</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.PensionMejorada)}</td></tr>
+          </table>
+        </div>
+      </div>
+      <div style="display:flex;gap:24px;">
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">FONDEO</div>
+          <table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr><td style="color:#6b6558;padding:3px 0;">AFORE</td><td style="text-align:right;color:#0D0D0D;">${fmt(c.AforeCantidad)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Reintegro</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Reintegro)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">1er mes de pensión</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.UnMesPension)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Capitalización</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Capitalizacion)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Fondeo total</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.FondeoTotal)}</td></tr>
+          </table>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">COSTOS</div>
+          <table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr><td style="color:#6b6558;padding:3px 0;">Costo sin interés</td><td style="text-align:right;color:#0D0D0D;">${fmt(c.CostoSinInteres)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Interés</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Interes)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Total</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.CostoTotal)}</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
     ${c.PlanA ? `
     <div style="margin:0 36px 24px;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Planes de financiamiento</div>
@@ -1078,6 +1125,55 @@ ${c.Nota ? `
           </div>
         </div>` : ''}
       </div>      
+
+      <div class="section-card" style="margin-top:1.25rem;">
+        <div class="sc-header">🧮 Desglose de Cálculo</div>
+        <div class="sc-body">
+          <div class="grid g2" style="gap:1rem;margin-bottom:1rem;">
+            <div style="background:#0D0D0D;border-radius:8px;border:1px solid #3A3A3A;padding:.9rem;">
+              <div style="font-size:.78rem;font-weight:600;color:#C9A84C;margin-bottom:.6rem;">PENSIÓN DIRECTA</div>
+              <table class="detail-table">
+                <tr><th>Edad</th><td>${c.Edad ? c.Edad + ' años' : '—'}</td></tr>
+                <tr><th>Salario mínimo del año</th><td>${fmt(c._SalarioMinimo)}</td></tr>
+                <tr><th>Pensión al salario</th><td>${fmt(c.PensionAlSalario)}</td></tr>
+                <tr><th>Pensión directa total</th><td style="font-weight:700;">${fmt(c.PensionDirectaTotal)}</td></tr>
+              </table>
+            </div>
+            <div style="background:#0D0D0D;border-radius:8px;border:1px solid #3A3A3A;padding:.9rem;">
+              <div style="font-size:.78rem;font-weight:600;color:#C9A84C;margin-bottom:.6rem;">PENSIÓN MEJORADA</div>
+              <table class="detail-table">
+                <tr><th>Meses</th><td>${c._Meses ?? '—'} meses</td></tr>
+                <tr><th>Año de baja</th><td>${c._AnioBaja || '—'}</td></tr>
+                <tr><th>UMA</th><td>${fmt(c._UMA)}</td></tr>
+                <tr><th>Edad mejorada</th><td>${c._NuevaEdad ? c._NuevaEdad + ' años' : '—'}</td></tr>
+                <tr><th>Semanas mejoradas</th><td>${c._NuevaSemanass ?? '—'} sem.</td></tr>
+                <tr><th>Salario mejorado</th><td>${fmt(c._NuevoSalario)}</td></tr>
+                <tr><th>Pensión mejorada</th><td style="font-weight:700;">${fmt(c.PensionMejorada)}</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="grid g2" style="gap:1rem;">
+            <div style="background:#0D0D0D;border-radius:8px;border:1px solid #3A3A3A;padding:.9rem;">
+              <div style="font-size:.78rem;font-weight:600;color:#C9A84C;margin-bottom:.6rem;">FONDEO</div>
+              <table class="detail-table">
+                <tr><th>AFORE</th><td>${fmt(c.AforeCantidad)}</td></tr>
+                <tr><th>Reintegro</th><td>${fmt(c.Reintegro)}</td></tr>
+                <tr><th>1er mes de pensión</th><td>${fmt(c.UnMesPension)}</td></tr>
+                <tr><th>Capitalización</th><td>${fmt(c.Capitalizacion)}</td></tr>
+                <tr><th>Fondeo total</th><td style="font-weight:700;color:#86efac;">${fmt(c.FondeoTotal)}</td></tr>
+              </table>
+            </div>
+            <div style="background:#0D0D0D;border-radius:8px;border:1px solid #3A3A3A;padding:.9rem;">
+              <div style="font-size:.78rem;font-weight:600;color:#C9A84C;margin-bottom:.6rem;">COSTOS</div>
+              <table class="detail-table">
+                <tr><th>Costo sin interés</th><td>${fmt(c.CostoSinInteres)}</td></tr>
+                <tr><th>Interés</th><td>${fmt(c.Interes)}</td></tr>
+                <tr><th>Total</th><td style="font-weight:700;">${fmt(c.CostoTotal)}</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
 
       ${c.PlanA ? `
       <div class="section-card" style="margin-top:1.25rem;">
