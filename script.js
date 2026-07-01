@@ -104,14 +104,14 @@ function calcular(c) {
     return 100;
   }
 
-// ── Entradas del formulario ───────────────────────────────
-  const salario       = numLimpio(c.Salario);              // Promedio Salario (diario)
+  // ── Entradas del formulario ───────────────────────────────
+  const salario       = numLimpio(c.Salario);            // Promedio Salario (diario)
   const semanas       = parseInt(c.NoSemanas)         || 0;  // No. Semanas
-  const aforeCant     = numLimpio(c.AforeCantidad);        // Cantidad de AFORE
-  const ajuste        = numLimpio(c.AjusteManual);         // Ajuste
-  const ayudaDesempleo= numLimpio(c.AyudaDesempleo);       // $ Ayuda por Desempleo
-  const aportacion    = numLimpio(c.AportacionCliente);    // Aportación del cliente
-  const moratorios    = parseFloat(c.MoratoriosPct)   || 0;  // % Moratorios (capturado)
+  const aforeCant     = numLimpio(c.AforeCantidad);       // Cantidad de AFORE
+  const ajuste        = numLimpio(c.AjusteManual);        // Ajuste
+  const ayudaDesempleo= numLimpio(c.AyudaDesempleo);      // $ Ayuda por Desempleo
+  const aportacion    = numLimpio(c.AportacionCliente);   // Aportación del cliente
+  const moratorios    = numLimpio(c.MoratoriosPct);       // % Moratorios (capturado)
 
   const fechaNacimiento = c.FechaNacimiento ? new Date(c.FechaNacimiento) : null;
   const fechaActual     = c.FechaActual     ? new Date(c.FechaActual)     : new Date();
@@ -336,7 +336,7 @@ function calcular(c) {
 }
 
 function fmt(n) {
-  return '$' + (parseFloat(n) || 0).toLocaleString('es-MX', {
+  return '$' + numLimpio(n).toLocaleString('es-MX', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
@@ -541,33 +541,37 @@ function renderForm(datos) {
         <div class="sc-body">
           <div class="grid g3" style="margin-bottom:1rem;">
             <div><label>Fecha de nacimiento *</label>
-              <input type="date" id="f_FechaNacimiento" value="${d.FechaNacimiento || ''}" onchange="preCalc()" required></div>
+              <input type="date" id="f_FechaNacimiento" value="${d.FechaNacimiento || ''}" required></div>
             <div><label>Fecha actual *</label>
-              <input type="date" id="f_FechaActual" value="${d.FechaActual || ''}" onchange="preCalc()" required></div>
+              <input type="date" id="f_FechaActual" value="${d.FechaActual || ''}" required></div>
             <div><label>No. de semanas cotizadas *</label>
-              <input type="number" id="f_NoSemanas" value="${d.NoSemanas || ''}" min="0" oninput="preCalc()" required></div>
+              <input type="number" id="f_NoSemanas" value="${d.NoSemanas || ''}" min="0" required></div>
             <div><label>Promedio salario diario ($) *</label>
-              <input type="text" inputmode="decimal" id="f_Salario" value="${d.Salario || ''}" oninput="formatoMoneda(this); preCalc()" required></div>           
+              <input type="text" inputmode="decimal" id="f_Salario" value="${d.Salario || ''}" oninput="formatoMoneda(this)" required></div>           
               <div><label>Fecha de baja *</label>
-              <input type="date" id="f_BajaFecha" value="${d.BajaFecha || ''}" onchange="preCalc()" required></div>
+              <input type="date" id="f_BajaFecha" value="${d.BajaFecha || ''}" required></div>
             <div><label>Fecha inicio de pensión *</label>
-              <input type="date" id="f_PensionFecha" value="${d.PensionFecha || ''}" onchange="preCalc()" required></div>
+              <input type="date" id="f_PensionFecha" value="${d.PensionFecha || ''}" required></div>
             <div><label>Cantidad AFORE ($) *</label>
-              <input type="text" inputmode="decimal" id="f_AforeCantidad" value="${d.AforeCantidad || ''}" oninput="formatoMoneda(this); preCalc()" required></div>
+              <input type="text" inputmode="decimal" id="f_AforeCantidad" value="${d.AforeCantidad || ''}" oninput="formatoMoneda(this)" required></div>
             <div><label>Aportación voluntaria ($) *</label>
-              <input type="text" inputmode="decimal" id="f_AportacionCliente" value="${d.AportacionCliente || ''}" oninput="formatoMoneda(this); preCalc()" required></div>
+              <input type="text" inputmode="decimal" id="f_AportacionCliente" value="${d.AportacionCliente || ''}" oninput="formatoMoneda(this)" required></div>
             <div><label>$ Ayuda por desempleo *</label>
-              <input type="text" inputmode="decimal" id="f_AyudaDesempleo" value="${d.AyudaDesempleo || ''}" oninput="formatoMoneda(this); preCalc()" required></div>
+              <input type="text" inputmode="decimal" id="f_AyudaDesempleo" value="${d.AyudaDesempleo || ''}" oninput="formatoMoneda(this)" required></div>
             <div><label>Ajuste ($) *</label>
-              <input type="text" inputmode="decimal" id="f_AjusteManual" value="${d.AjusteManual || ''}" oninput="formatoMoneda(this); preCalc()" required></div>            
+              <input type="text" inputmode="decimal" id="f_AjusteManual" value="${d.AjusteManual || ''}" oninput="formatoMoneda(this)" required></div>            
               <div><label>Ciclos *</label>
-              <input type="number" id="f_Cicloss" value="${d.Cicloss || ''}" min="0" oninput="preCalc()" required></div>
+              <input type="number" id="f_Cicloss" value="${d.Cicloss || ''}" min="0" required></div>
             <div><label>% Moratorios</label>
-              <input type="number" id="f_MoratoriosPct" value="${d.MoratoriosPct || ''}" step="0.01" oninput="preCalc()"></div>
+              <input type="number" id="f_MoratoriosPct" value="${d.MoratoriosPct || ''}" step="0.01"></div>
           </div>
 
           <!-- RESULTADOS -->
           <div style="display:grid;gap:.7rem;">
+
+            <div style="background:#2A2410;border:1px solid #C9A84C;border-radius:8px;padding:.6rem .85rem;color:#E8C97A;font-size:.8rem;">
+              ℹ️ Los resultados se calculan y se muestran al presionar <strong>"💾 Guardar y Calcular"</strong> abajo.
+            </div>
 
             <div style="border-radius:8px;border:1px solid #3A3A3A;overflow:hidden;">
               <div style="background:#0D0D0D;border-bottom:1px solid #3A3A3A;color:#C9A84C;font-weight:700;font-size:.75rem;padding:.4rem .85rem;letter-spacing:.5px;">PENSIÓN DIRECTA</div>
@@ -763,7 +767,7 @@ function preCalc() {
       set('p_CostoSinInteres', fmt(r.CostoSinInteres));
       set('p_Interes',         fmt(r.Interes));
       set('p_CostoTotal',      fmt(r.CostoTotal));
-      set('p_AforeMostrar',    fmt(numLimpio(tmp.AforeCantidad)));      
+      set('p_AforeMostrar',    fmt(tmp.AforeCantidad));
       set('p_FondeoTotal',     fmt(r.FondeoTotal));
       set('p_PlanA_fondeo',    fmt(r.PlanA.fondeoTotal));
       set('p_PlanA_costo',     fmt(r.PlanA.costo));
