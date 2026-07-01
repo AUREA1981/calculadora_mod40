@@ -1302,10 +1302,104 @@ function imprimirCliente(id) {
   window.print();
 }
 
-function descargarPDF(id) {
+let _logoDataURLPromise = null;
+function getLogoDataURL() {
+  if (_logoDataURLPromise) return _logoDataURLPromise;
+  _logoDataURLPromise = new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.92));
+      } catch (e) { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = 'logo-aurea.jpeg';
+  });
+  return _logoDataURLPromise;
+}
+
+async function descargarPDF(id) {
   registrarAccion(id, 'Descarga PDF');
-  mostrarToast('🖨️ En el cuadro, elige "Guardar como PDF" y dale clic en Guardar.');
-  window.print();
+  const c = clientes.find(x => x.id === id);
+  if (!c) return;
+
+  if (typeof html2pdf === 'undefined') {
+    mostrarToast('🖨️ En el cuadro, elige "Guardar como PDF" y dale clic en Guardar.');
+    window.print();
+    return;
+  }
+
+  mostrarToast('📄 Generando PDF…');
+
+  const bodyEl = document.querySelector('#documentoOficial .imp-body');
+  if (!bodyEl) { window.print(); return; }
+
+  const marginTop = 32, marginBottom = 20, marginSide = 10; // mm
+  const opt = {
+    margin: [marginTop, marginSide, marginBottom, marginSide],
+    filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+
+  try {
+    const worker = html2pdf().set(opt).from(bodyEl).toPdf();
+    const pdf = await worker.get('pdf');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const totalPages = pdf.internal.getNumberOfPages();
+    const logoData = await getLogoDataURL();
+    const folio = c.FOLIO || '—';
+    const fecha = c.FECHACAPTURA || new Date().toLocaleDateString('es-MX');
+
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+
+      // ── Encabezado (siempre arriba) ──
+      pdf.setFillColor(13, 13, 13);
+      pdf.rect(0, 0, pageW, marginTop - 4, 'F');
+      pdf.setDrawColor(201, 168, 76);
+      pdf.setLineWidth(1.2);
+      pdf.line(0, marginTop - 4, pageW, marginTop - 4);
+      if (logoData) pdf.addImage(logoData, 'JPEG', marginSide, 5, 14, 14, undefined, 'FAST');
+      pdf.setTextColor(201, 168, 76);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15);
+      pdf.text('ÁUREA', marginSide + 18, 13);
+      pdf.setTextColor(232, 201, 122);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
+      pdf.text('ASESORÍA INTEGRAL', marginSide + 18, 17.5);
+      pdf.setTextColor(232, 201, 122);
+      pdf.setFontSize(9.5);
+      pdf.text('Proyección de pensión IMSS', pageW - marginSide, 11, { align: 'right' });
+      pdf.setTextColor(138, 128, 100);
+      pdf.setFontSize(7.5);
+      pdf.text(`Folio: ${folio}`, pageW - marginSide, 15.5, { align: 'right' });
+
+      // ── Pie de página (siempre abajo) ──
+      const footY = pageH - marginBottom + 6;
+      pdf.setFillColor(13, 13, 13);
+      pdf.rect(0, footY, pageW, marginBottom - 6, 'F');
+      pdf.setTextColor(138, 128, 100);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5);
+      pdf.text('Áurea Asesoría Integral · Documento generado automáticamente', marginSide, footY + 8);
+      pdf.setTextColor(201, 168, 76);
+      pdf.text(fecha, pageW - marginSide, footY + 8, { align: 'right' });
+    }
+
+    pdf.save(opt.filename);
+    mostrarToast('✅ PDF descargado.');
+  } catch (e) {
+    console.error('descargarPDF error:', e);
+    mostrarToast('⚠️ No se pudo generar el PDF, se abrió la impresión normal.');
+    window.print();
+  }
 }
 
 function enviarPorEmail(id) {
