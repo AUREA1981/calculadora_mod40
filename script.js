@@ -907,7 +907,7 @@ function documentoHTML(c) {
       <div style="font-size:13px;color:#6b6558;margin-top:3px;">NSS ${c.NSS || '—'} &nbsp;·&nbsp; CURP ${c.CURP || '—'} &nbsp;·&nbsp; Emitido ${c.FECHACAPTURA || new Date().toLocaleDateString('es-MX')}</div>
     </div>
 
-    <div style="margin:20px 36px;background:#faf6ea;border:1px solid #e6dcc0;border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="margin:20px 36px;background:#faf6ea;border:1px solid #e6dcc0;border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;page-break-inside:avoid;break-inside:avoid;">
       <div>
         <div style="font-size:11px;letter-spacing:1.2px;color:#8a7328;text-transform:uppercase;">Fondeo total</div>
         <div style="font-size:30px;font-weight:bold;color:#0D0D0D;margin-top:3px;">${fmt(c.FondeoTotal)}</div>
@@ -924,13 +924,13 @@ function documentoHTML(c) {
       </div>
     </div>
 
-    <div style="margin:0 36px 20px;display:flex;gap:24px;">
+    <div style="margin:0 36px 20px;display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
       <div style="flex:1;">
         <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Datos personales</div>
         <table style="width:100%;font-size:12px;border-collapse:collapse;">
           <tr><td style="color:#6b6558;padding:4px 0;">Teléfono</td><td style="text-align:right;color:#0D0D0D;">${c.TelCelular || '—'}</td></tr>
           <tr><td style="color:#6b6558;padding:4px 0;border-top:1px solid #f0ede3;">AFORE</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c.AFORE || '—'}</td></tr>
-          <tr><td style="color:#6b6558;padding:4px 0;border-top:1px solid #f0ede3;">Edad</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c.Edad ? c.Edad + ' años' : '—'}</td></tr>
+          <tr><td style="color:#6b6558;padding:4px 0;border-top:1px solid #f0ede3;">Edad</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c.Edad ? (c.Edad || 0).toFixed(2) + ' años' : '—'}</td></tr>
         </table>
       </div>
       <div style="flex:1;">
@@ -944,7 +944,7 @@ function documentoHTML(c) {
       </div>
     </div>
 
-    <div style="margin:0 36px 20px;">
+    <div style="margin:0 36px 20px;page-break-inside:avoid;break-inside:avoid;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Resumen de costos</div>
       <table style="width:100%;font-size:12px;border-collapse:collapse;">
         <tr><td style="color:#6b6558;padding:4px 0;">Costo total</td><td style="text-align:right;color:#0D0D0D;font-weight:bold;">${fmt(c.CostoTotal)}</td></tr>
@@ -955,11 +955,11 @@ function documentoHTML(c) {
 
     <div style="margin:0 36px 20px;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Desglose de cálculo</div>
-      <div style="display:flex;gap:24px;margin-bottom:14px;">
+      <div style="display:flex;gap:24px;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid;">
         <div style="flex:1;">
           <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">PENSIÓN DIRECTA</div>
           <table style="width:100%;font-size:12px;border-collapse:collapse;">
-            <tr><td style="color:#6b6558;padding:3px 0;">Edad</td><td style="text-align:right;color:#0D0D0D;">${c.Edad ? c.Edad + ' años' : '—'}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;">Edad</td><td style="text-align:right;color:#0D0D0D;">${c.Edad ? (c.Edad || 0).toFixed(2) + ' años' : '—'}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Salario mínimo del año</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._SalarioMinimo)}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Pensión al salario</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.PensionAlSalario)}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Pensión directa total</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.PensionDirectaTotal)}</td></tr>
@@ -968,17 +968,17 @@ function documentoHTML(c) {
         <div style="flex:1;">
           <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">PENSIÓN MEJORADA</div>
           <table style="width:100%;font-size:12px;border-collapse:collapse;">
-            <tr><td style="color:#6b6558;padding:3px 0;">Meses</td><td style="text-align:right;color:#0D0D0D;">${c._Meses ?? '—'} meses</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;">Meses</td><td style="text-align:right;color:#0D0D0D;">${c._Meses != null ? Math.round(c._Meses) : '—'} meses</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Año de baja</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._AnioBaja || '—'}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">UMA</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._UMA)}</td></tr>
-            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Edad mejorada</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._NuevaEdad ? c._NuevaEdad + ' años' : '—'}</td></tr>
-            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Semanas mejoradas</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._NuevaSemanass ?? '—'} sem.</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Edad mejorada</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._NuevaEdad ? (c._NuevaEdad || 0).toFixed(2) + ' años' : '—'}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Semanas mejoradas</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${c._NuevaSemanass != null ? Math.round(c._NuevaSemanass) : '—'} sem.</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Salario mejorado</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._NuevoSalario)}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Pensión mejorada</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.PensionMejorada)}</td></tr>
           </table>
         </div>
       </div>
-      <div style="display:flex;gap:24px;">
+      <div style="display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
         <div style="flex:1;">
           <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">FONDEO</div>
           <table style="width:100%;font-size:12px;border-collapse:collapse;">
@@ -1001,7 +1001,7 @@ function documentoHTML(c) {
     </div>
 
     ${c.PlanA ? `
-    <div style="margin:0 36px 24px;">
+    <div style="margin:0 36px 24px;page-break-inside:avoid;break-inside:avoid;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Planes de financiamiento</div>
       <table style="width:100%;font-size:12px;border-collapse:collapse;">
         ${filaPlan('A · Propios — sobrante/faltante', fmt(c.PlanA.sobranteFaltante))}
@@ -1010,7 +1010,7 @@ function documentoHTML(c) {
       </table>
     </div>` : ''}
 
-    <table style="width:100%;border-collapse:collapse;margin:0 0 26px;">
+    <table style="width:100%;border-collapse:collapse;margin:0 0 26px;page-break-inside:avoid;break-inside:avoid;">
       <tr>
         <td style="width:50%;padding:0 36px;">
           <div style="border-bottom:1px solid #6b6558;height:46px;"></div>
@@ -1080,7 +1080,7 @@ document.getElementById('main').innerHTML = `
               <tr><th>CURP</th><td class="mono" style="font-size:.8rem">${c.CURP || '—'}</td></tr>
               ${row('Teléfono', c.TelCelular)}
               <tr><th>AFORE</th><td>${c.AFORE ? `<span class="tag-afore">${c.AFORE}</span>` : '—'}</td></tr>              
-              ${row('Edad', c.Edad ? c.Edad + ' años' : '')}
+              ${row('Edad', c.Edad ? (c.Edad || 0).toFixed(2) + ' años' : '')}
             </table>
           </div>
         </div>
@@ -1133,7 +1133,7 @@ ${c.Nota ? `
             <div style="background:#0D0D0D;border-radius:8px;border:1px solid #3A3A3A;padding:.9rem;">
               <div style="font-size:.78rem;font-weight:600;color:#C9A84C;margin-bottom:.6rem;">PENSIÓN DIRECTA</div>
               <table class="detail-table">
-                <tr><th>Edad</th><td>${c.Edad ? c.Edad + ' años' : '—'}</td></tr>
+                <tr><th>Edad</th><td>${c.Edad ? (c.Edad || 0).toFixed(2) + ' años' : '—'}</td></tr>
                 <tr><th>Salario mínimo del año</th><td>${fmt(c._SalarioMinimo)}</td></tr>
                 <tr><th>Pensión al salario</th><td>${fmt(c.PensionAlSalario)}</td></tr>
                 <tr><th>Pensión directa total</th><td style="font-weight:700;">${fmt(c.PensionDirectaTotal)}</td></tr>
@@ -1142,11 +1142,11 @@ ${c.Nota ? `
             <div style="background:#0D0D0D;border-radius:8px;border:1px solid #3A3A3A;padding:.9rem;">
               <div style="font-size:.78rem;font-weight:600;color:#C9A84C;margin-bottom:.6rem;">PENSIÓN MEJORADA</div>
               <table class="detail-table">
-                <tr><th>Meses</th><td>${c._Meses ?? '—'} meses</td></tr>
+                <tr><th>Meses</th><td>${c._Meses != null ? Math.round(c._Meses) : '—'} meses</td></tr>
                 <tr><th>Año de baja</th><td>${c._AnioBaja || '—'}</td></tr>
                 <tr><th>UMA</th><td>${fmt(c._UMA)}</td></tr>
-                <tr><th>Edad mejorada</th><td>${c._NuevaEdad ? c._NuevaEdad + ' años' : '—'}</td></tr>
-                <tr><th>Semanas mejoradas</th><td>${c._NuevaSemanass ?? '—'} sem.</td></tr>
+                <tr><th>Edad mejorada</th><td>${c._NuevaEdad ? (c._NuevaEdad || 0).toFixed(2) + ' años' : '—'}</td></tr>
+                <tr><th>Semanas mejoradas</th><td>${c._NuevaSemanass != null ? Math.round(c._NuevaSemanass) : '—'} sem.</td></tr>
                 <tr><th>Salario mejorado</th><td>${fmt(c._NuevoSalario)}</td></tr>
                 <tr><th>Pensión mejorada</th><td style="font-weight:700;">${fmt(c.PensionMejorada)}</td></tr>
               </table>
