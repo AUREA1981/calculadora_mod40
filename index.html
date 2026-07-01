@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Pensiones IMSS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════ -->
+<header>
+  <div class="brand">
+    <img src="logo-aurea.jpeg" alt="Áurea Asesoría Integral" class="brand-logo">
+    <div class="brand-text">
+      <span class="brand-title">Áurea</span>
+      <span class="brand-subtitle">Calculadora de Pensiones IMSS</span>
+    </div>
+  </div>
+  <div class="nav-btns">
+    <button class="btn-menu-movil" onclick="toggleMenuMovil()">☰</button>
+    <button id="btnVista" class="active" onclick="mostrarVista('lista')">Clientes</button>
+    <button onclick="mostrarVista('form'); modoNuevo()">+ Nuevo</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     LAYOUT PRINCIPAL
+     ═══════════════════════════════════════════════ -->
+<div class="app">
+
+  <!-- Sidebar con lista de clientes -->
+  <aside>
+    <div class="aside-header">
+      <span>Clientes</span>
+      <button class="btn-nuevo" onclick="mostrarVista('form'); modoNuevo()">+ Nuevo</button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="busqueda" placeholder="Buscar…" oninput="renderLista()">
+    </div>
+    <div id="listaClientes"></div>
+  </aside>
+
+  <!-- Área principal (contenido dinámico) -->
+  <main id="main">
+    <!-- El contenido se inyecta aquí desde script.js -->
+  </main>
+
+</div>
+
+  <!-- ═══════════════════════════════════════════════
+      PIE DE PÁGINA
+      ═══════════════════════════════════════════════ -->
+  <footer class="site-footer no-print">
+    <div>© 2026 Áurea Asesoría Integral · Todos los derechos reservados</div>
+    <div>Puebla, México</div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════
+      TOAST (notificaciones)
+      ═══════════════════════════════════════════════ -->
+  <div class="toast" id="toast"></div>
+
+  
+<!-- ═══════════════════════════════════════════════
+     MODAL — confirmar eliminar
+     ═══════════════════════════════════════════════ -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>⚠️ Eliminar cliente</h3>
+    <p id="modalMsg">Esta acción no se puede deshacer.</p>
+    <div class="modal-btns">
+      <button class="btn-confirm-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-confirm-del"    onclick="confirmarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Script al final del body -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
