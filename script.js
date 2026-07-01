@@ -1194,6 +1194,7 @@ ${c.Nota ? `
                 <tr><th>Monto crédito</th><td>${fmt(c.PlanB.monto)}</td></tr>
                 <tr><th>Mensualidad</th><td>${fmt(c.PlanB.mensualidad)}</td></tr>
                 <tr><th>Libre de pensión</th><td>${fmt(c.PlanB.quedandoLibrePension)}</td></tr>
+                <tr><th>Fondeo</th><td>${fmt(c.FondeoTotal)}</td></tr>
                 <tr><th>Sobrante/Faltante</th><td style="color:${c.PlanB.sobranteFaltante>=0?'#86efac':'#fca5a5'};font-weight:700;">${fmt(c.PlanB.sobranteFaltante)}</td></tr>
               </table>
             </div>
@@ -1216,6 +1217,7 @@ ${c.Nota ? `
             </div>
             <table class="detail-table" style="border-top:1px solid #3A3A3A;margin-top:.5rem;padding-top:.3rem;">
               <tr><th>Suma de ambos créditos</th><td>${fmt(c.PlanC.sumaCreditos)}</td></tr>
+              <tr><th>Fondeo</th><td>${fmt(c.FondeoTotal)}</td></tr>
               <tr><th>Sobrante/Faltante</th><td style="color:${c.PlanC.sobranteFaltante>=0?'#86efac':'#fca5a5'};font-weight:700;">${fmt(c.PlanC.sobranteFaltante)}</td></tr>
             </table>
           </div>
