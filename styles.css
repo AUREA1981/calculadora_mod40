@@ -148,7 +148,7 @@ aside .search-box input:focus { border-color: var(--verde-medio); }
 /* ══════════════════════════════════════════════════════════
    ÁREA PRINCIPAL (main)
    ══════════════════════════════════════════════════════════ */
-main { flex: 1; padding: 2rem; overflow-y: auto; }
+  main { flex: 1; padding: 2rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
 
 /* ── Pantalla de bienvenida ── */
 .welcome {
@@ -651,6 +651,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;  
   overflow: hidden;
 }
 header { flex-shrink: 0; }
