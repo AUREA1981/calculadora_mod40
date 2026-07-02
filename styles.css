@@ -674,7 +674,7 @@ header .brand-subtitle {
 }
 
 
-@media (min-width: 701px) {
+@media (min-width: 1101px) {
   html, body { height: 100%; }
   body {
     display: flex;
