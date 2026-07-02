@@ -605,9 +605,16 @@ header .brand-subtitle {
 }
 
 
-.solo-impresion { display: none; }
+.solo-impresion {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: -10000px;
+  width: 794px;
+  z-index: -1;
+}
 @media print {
-  .solo-impresion { display: block !important; }
+  .solo-impresion { position: static !important; left: 0 !important; width: auto !important; }
   .pantalla-detalle { display: none !important; }
 }
 .firma-block {

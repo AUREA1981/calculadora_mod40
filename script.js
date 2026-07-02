@@ -1284,29 +1284,6 @@ async function construirPDFCliente(c) {
   const bodyEl = document.querySelector('#documentoOficial .imp-body');
   if (!bodyEl || !contenedor) return null;
 
-  // Forzamos visibilidad real (no solo la de @media print) para que la
-  // captura sea 100% confiable en cualquier navegador, y lo restauramos
-  // pase lo que pase al terminar.
-  //
-  // IMPORTANTE: usar "position: fixed" aquí producía un PDF con el
-  // cuerpo en blanco en algunos navegadores/dispositivos, porque
-  // html2canvas calcula mal las coordenadas de elementos "fixed" al
-  // hacer scroll. Por eso lo movemos temporalmente a <body> con
-  // "position: absolute" y lo sacamos de la pantalla, en vez de fijarlo
-  // encima con z-index negativo.
-  const padreOriginal   = contenedor.parentNode;
-  const hermanoOriginal = contenedor.nextSibling;
-  const displayPrevio   = contenedor.style.display;
-
-  document.body.appendChild(contenedor);
-  contenedor.style.setProperty('display', 'block', 'important');
-  contenedor.style.setProperty('position', 'absolute', 'important');
-  contenedor.style.setProperty('top', '0', 'important');
-  contenedor.style.setProperty('left', '-99999px', 'important');
-  contenedor.style.setProperty('z-index', '0', 'important');
-
-  try {
-
   const headerBarH = 28;   // alto de la franja negra
   const clienteInfoH = 15; // espacio extra para nombre/NSS/CURP debajo
   const marginTop = headerBarH + clienteInfoH;
@@ -1375,20 +1352,6 @@ async function construirPDFCliente(c) {
   }
 
   return { pdf, filename: opt.filename };
-  } finally {
-    // Regresamos el documento exactamente a donde estaba, tal cual, y
-    // limpiamos los estilos forzados.
-    if (hermanoOriginal) {
-      padreOriginal.insertBefore(contenedor, hermanoOriginal);
-    } else {
-      padreOriginal.appendChild(contenedor);
-    }
-    contenedor.style.display = displayPrevio;
-    contenedor.style.removeProperty('position');
-    contenedor.style.removeProperty('top');
-    contenedor.style.removeProperty('left');
-    contenedor.style.removeProperty('z-index');
-  }
 }
 
 async function imprimirCliente(id) {
