@@ -1279,77 +1279,97 @@ function registrarAccion(id, accion) {
 }
 
 async function construirPDFCliente(c) {
+  const contenedor = document.getElementById('documentoOficial');
   const bodyEl = document.querySelector('#documentoOficial .imp-body');
-  if (!bodyEl) return null;
+  if (!bodyEl || !contenedor) return null;
 
-  const headerBarH = 28;   // alto de la franja negra
-  const clienteInfoH = 15; // espacio extra para nombre/NSS/CURP debajo
-  const marginTop = headerBarH + clienteInfoH;
-  const marginBottom = 20, marginSide = 10; // mm
-  const opt = {
-    margin: [marginTop, marginSide, marginBottom, marginSide],
-    filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  };
+  // Forzamos visibilidad real (no solo la de @media print) para que la
+  // captura sea 100% confiable en cualquier navegador, y lo restauramos
+  // pase lo que pase al terminar.
+  const displayPrevio = contenedor.style.display;
+  const posicionPrevia = contenedor.style.position;
+  contenedor.style.setProperty('display', 'block', 'important');
+  contenedor.style.setProperty('position', 'fixed', 'important');
+  contenedor.style.setProperty('top', '0', 'important');
+  contenedor.style.setProperty('left', '0', 'important');
+  contenedor.style.setProperty('z-index', '-1', 'important');
 
-  const worker = html2pdf().set(opt).from(bodyEl).toPdf();
-  const pdf = await worker.get('pdf');
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
-  const totalPages = pdf.internal.getNumberOfPages();
-  const logoData = await getLogoDataURL();
-  const folio = c.FOLIO || '—';
-  const fecha = c.FECHACAPTURA || new Date().toLocaleDateString('es-MX');
-  const nombre = c.CLIENTE || '';
-  const nss = c.NSS || '—';
-  const curp = c.CURP || '—';
+  try {
+    const headerBarH = 28;   // alto de la franja negra
+    const clienteInfoH = 15; // espacio extra para nombre/NSS/CURP debajo
+    const marginTop = headerBarH + clienteInfoH;
+    const marginBottom = 20, marginSide = 10; // mm
+    const opt = {
+      margin: [marginTop, marginSide, marginBottom, marginSide],
+      filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
 
-  for (let i = 1; i <= totalPages; i++) {
-    pdf.setPage(i);
+    const worker = html2pdf().set(opt).from(bodyEl).toPdf();
+    const pdf = await worker.get('pdf');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const totalPages = pdf.internal.getNumberOfPages();
+    const logoData = await getLogoDataURL();
+    const folio = c.FOLIO || '—';
+    const fecha = c.FECHACAPTURA || new Date().toLocaleDateString('es-MX');
+    const nombre = c.CLIENTE || '';
+    const nss = c.NSS || '—';
+    const curp = c.CURP || '—';
 
-    // ── Encabezado (siempre arriba) ──
-    pdf.setFillColor(13, 13, 13);
-    pdf.rect(0, 0, pageW, headerBarH, 'F');
-    pdf.setDrawColor(201, 168, 76);
-    pdf.setLineWidth(1.2);
-    pdf.line(0, headerBarH, pageW, headerBarH);
-    if (logoData) pdf.addImage(logoData, 'JPEG', marginSide, 5, 14, 14, undefined, 'FAST');
-    pdf.setTextColor(201, 168, 76);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15);
-    pdf.text('ÁUREA', marginSide + 18, 13);
-    pdf.setTextColor(232, 201, 122);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
-    pdf.text('ASESORÍA INTEGRAL', marginSide + 18, 17.5);
-    pdf.setTextColor(232, 201, 122);
-    pdf.setFontSize(9.5);
-    pdf.text('Proyección de pensión IMSS', pageW - marginSide, 11, { align: 'right' });
-    pdf.setTextColor(138, 128, 100);
-    pdf.setFontSize(7.5);
-    pdf.text(`Folio: ${folio}`, pageW - marginSide, 15.5, { align: 'right' });
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
 
-    // ── Nombre del cliente (se repite en cada página) ──
-    pdf.setTextColor(13, 13, 13);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(12.5);
-    pdf.text(nombre, marginSide, headerBarH + 8);
-    pdf.setTextColor(107, 101, 88);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
-    pdf.text(`NSS ${nss}  ·  CURP ${curp}  ·  Emitido ${fecha}`, marginSide, headerBarH + 13);
+      // ── Encabezado (siempre arriba) ──
+      pdf.setFillColor(13, 13, 13);
+      pdf.rect(0, 0, pageW, headerBarH, 'F');
+      pdf.setDrawColor(201, 168, 76);
+      pdf.setLineWidth(1.2);
+      pdf.line(0, headerBarH, pageW, headerBarH);
+      if (logoData) pdf.addImage(logoData, 'JPEG', marginSide, 5, 14, 14, undefined, 'FAST');
+      pdf.setTextColor(201, 168, 76);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15);
+      pdf.text('ÁUREA', marginSide + 18, 13);
+      pdf.setTextColor(232, 201, 122);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
+      pdf.text('ASESORÍA INTEGRAL', marginSide + 18, 17.5);
+      pdf.setTextColor(232, 201, 122);
+      pdf.setFontSize(9.5);
+      pdf.text('Proyección de pensión IMSS', pageW - marginSide, 11, { align: 'right' });
+      pdf.setTextColor(138, 128, 100);
+      pdf.setFontSize(7.5);
+      pdf.text(`Folio: ${folio}`, pageW - marginSide, 15.5, { align: 'right' });
 
-    // ── Pie de página (siempre abajo) ──
-    const footY = pageH - marginBottom + 6;
-    pdf.setFillColor(13, 13, 13);
-    pdf.rect(0, footY, pageW, marginBottom - 6, 'F');
-    pdf.setTextColor(138, 128, 100);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5);
-    pdf.text('Áurea Asesoría Integral · Documento generado automáticamente', marginSide, footY + 8);
-    pdf.setTextColor(201, 168, 76);
-    pdf.text(fecha, pageW - marginSide, footY + 8, { align: 'right' });
+      // ── Nombre del cliente (se repite en cada página) ──
+      pdf.setTextColor(13, 13, 13);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(12.5);
+      pdf.text(nombre, marginSide, headerBarH + 8);
+      pdf.setTextColor(107, 101, 88);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
+      pdf.text(`NSS ${nss}  ·  CURP ${curp}  ·  Emitido ${fecha}`, marginSide, headerBarH + 13);
+
+      // ── Pie de página (siempre abajo) ──
+      const footY = pageH - marginBottom + 6;
+      pdf.setFillColor(13, 13, 13);
+      pdf.rect(0, footY, pageW, marginBottom - 6, 'F');
+      pdf.setTextColor(138, 128, 100);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5);
+      pdf.text('Áurea Asesoría Integral · Documento generado automáticamente', marginSide, footY + 8);
+      pdf.setTextColor(201, 168, 76);
+      pdf.text(fecha, pageW - marginSide, footY + 8, { align: 'right' });
+    }
+
+    return { pdf, filename: opt.filename };
+  } finally {
+    contenedor.style.display = displayPrevio;
+    contenedor.style.position = posicionPrevia;
+    contenedor.style.removeProperty('top');
+    contenedor.style.removeProperty('left');
+    contenedor.style.removeProperty('z-index');
   }
-
-  return { pdf, filename: opt.filename };
 }
 
 async function imprimirCliente(id) {
