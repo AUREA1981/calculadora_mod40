@@ -1280,8 +1280,22 @@ function registrarAccion(id, accion) {
 }
 
 async function construirPDFCliente(c) {
+  const contenedor = document.getElementById('documentoOficial');
   const bodyEl = document.querySelector('#documentoOficial .imp-body');
-  if (!bodyEl) return null;
+  if (!bodyEl || !contenedor) return null;
+
+  // Forzamos visibilidad real (no solo la de @media print) para que la
+  // captura sea 100% confiable en cualquier navegador, y lo restauramos
+  // pase lo que pase al terminar.
+  const displayPrevio = contenedor.style.display;
+  const posicionPrevia = contenedor.style.position;
+  contenedor.style.setProperty('display', 'block', 'important');
+  contenedor.style.setProperty('position', 'fixed', 'important');
+  contenedor.style.setProperty('top', '0', 'important');
+  contenedor.style.setProperty('left', '0', 'important');
+  contenedor.style.setProperty('z-index', '-1', 'important');
+
+  try {
 
   const headerBarH = 28;   // alto de la franja negra
   const clienteInfoH = 15; // espacio extra para nombre/NSS/CURP debajo
@@ -1351,6 +1365,13 @@ async function construirPDFCliente(c) {
   }
 
   return { pdf, filename: opt.filename };
+  } finally {
+    contenedor.style.display = displayPrevio;
+    contenedor.style.position = posicionPrevia;
+    contenedor.style.removeProperty('top');
+    contenedor.style.removeProperty('left');
+    contenedor.style.removeProperty('z-index');
+  }
 }
 
 async function imprimirCliente(id) {

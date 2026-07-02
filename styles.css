@@ -285,8 +285,8 @@ input[type=date]::-webkit-calendar-picker-indicator:hover {
 }
 .resultado-banner .grid-montos {
   display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2,1fr);
+  gap: 1rem 2rem;
   flex: 1;
   min-width: 0;
 }
