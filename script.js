@@ -63,6 +63,190 @@ let idEliminar = null;
 let editandoId = null;
 
 // ─────────────────────────────────────────────────────────────
+// SINCRONIZACIÓN ENTRE DISPOSITIVOS (Firebase / Firestore)
+// ─────────────────────────────────────────────────────────────
+// Guarda cada cliente también en un servidor central, para que
+// se pueda ver desde cualquier computadora/tablet/teléfono.
+// Si no hay internet o Firebase no carga, la calculadora sigue
+// funcionando normal con los datos guardados en este dispositivo.
+// ─────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDEMCyxdPHEHWmpft9i_0PMxSxPW0FKVnI",
+  authDomain: "aurea-calculadora.firebaseapp.com",
+  projectId: "aurea-calculadora",
+  storageBucket: "aurea-calculadora.firebasestorage.app",
+  messagingSenderId: "630804958644",
+  appId: "1:630804958644:web:202d50f2eccf80c17676e1"
+};
+
+let db = null;
+let syncDisponible = false;
+let usuarioActual = null; // { uid, email, nombre, rol: 'admin' | 'asesor' }
+let _unsubClientes = null;
+const COLECCION_CLIENTES = 'clientes';
+const COLECCION_USUARIOS = 'usuarios';
+
+function mostrarLogin(mensajeError) {
+  const overlay = document.getElementById('loginOverlay');
+  const app = document.querySelector('.app');
+  const navBtns = document.querySelector('header .nav-btns');
+  if (overlay) overlay.style.display = 'flex';
+  if (app) app.style.display = 'none';
+  if (navBtns) navBtns.style.display = 'none';
+  const errEl = document.getElementById('loginError');
+  if (errEl) errEl.textContent = mensajeError || '';
+}
+
+function ocultarLogin() {
+  const overlay = document.getElementById('loginOverlay');
+  const app = document.querySelector('.app');
+  const navBtns = document.querySelector('header .nav-btns');
+  if (overlay) overlay.style.display = 'none';
+  if (app) app.style.display = 'flex';
+  if (navBtns) navBtns.style.display = 'flex';
+}
+
+async function iniciarSesion() {
+  const email = (document.getElementById('loginEmail')?.value || '').trim();
+  const pass  = document.getElementById('loginPass')?.value || '';
+  if (!email || !pass) { mostrarLogin('Escribe tu correo y contraseña.'); return; }
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+    // El resto lo maneja onAuthStateChanged
+  } catch (e) {
+    console.error('Error de inicio de sesión:', e);
+    mostrarLogin('Correo o contraseña incorrectos.');
+  }
+}
+
+function cerrarSesion() {
+  if (_unsubClientes) { _unsubClientes(); _unsubClientes = null; }
+  firebase.auth().signOut();
+}
+
+async function cargarPerfilUsuario(uid) {
+  const doc = await db.collection(COLECCION_USUARIOS).doc(uid).get();
+  if (!doc.exists) throw new Error('Tu cuenta no tiene un perfil configurado. Pide al administrador que te dé de alta.');
+  return doc.data();
+}
+
+async function guardarClienteEnServidor(datos) {
+  if (!syncDisponible) return;
+  try {
+    await db.collection(COLECCION_CLIENTES).doc(String(datos.id)).set(datos);
+  } catch (e) {
+    console.error('Error guardando en el servidor:', e);
+    mostrarToast('⚠️ Se guardó en este dispositivo, pero no se pudo sincronizar (revisa tu conexión).');
+  }
+}
+
+async function eliminarClienteDelServidor(id) {
+  if (!syncDisponible) return;
+  try {
+    await db.collection(COLECCION_CLIENTES).doc(String(id)).delete();
+  } catch (e) {
+    console.error('Error eliminando en el servidor:', e);
+    mostrarToast('⚠️ Se eliminó en este dispositivo, pero no se pudo sincronizar (revisa tu conexión).');
+  }
+}
+
+// Sube a Firestore, una sola vez, los clientes que ya estaban
+// guardados localmente antes de conectar la sincronización —
+// quedan asignados a quien los suba (no había dueño antes).
+async function migrarClientesLocalesSiHaceFalta() {
+  try {
+    const snapshot = await db.collection(COLECCION_CLIENTES).limit(1).get();
+    if (snapshot.empty) {
+      const locales = cargarDatos();
+      if (locales.length) {
+        const batch = db.batch();
+        locales.forEach(c => {
+          if (c && c.id != null) {
+            if (!c.creadoPorUid) c.creadoPorUid = usuarioActual.uid;
+            batch.set(db.collection(COLECCION_CLIENTES).doc(String(c.id)), c);
+          }
+        });
+        await batch.commit();
+      }
+    }
+  } catch (e) {
+    console.error('Error migrando datos locales al servidor:', e);
+  }
+}
+
+// Escucha cambios en tiempo real: si CUALQUIER dispositivo agrega,
+// edita o elimina un cliente, aquí se refleja automáticamente.
+// El admin ve todos los clientes; cada asesor solo ve los suyos.
+function iniciarSincronizacionTiempoReal() {
+  if (_unsubClientes) { _unsubClientes(); _unsubClientes = null; }
+  const ref = usuarioActual.rol === 'admin'
+    ? db.collection(COLECCION_CLIENTES)
+    : db.collection(COLECCION_CLIENTES).where('creadoPorUid', '==', usuarioActual.uid);
+
+  _unsubClientes = ref.onSnapshot(
+    (snapshot) => {
+      const remotos = snapshot.docs.map(d => d.data());
+      remotos.sort((a, b) => (b.id || 0) - (a.id || 0));
+      clientes = remotos;
+      guardarDatos(clientes); // respaldo local por si se pierde la conexión
+      renderLista();
+    },
+    (err) => {
+      console.error('Error de sincronización en tiempo real:', err);
+    }
+  );
+}
+
+function actualizarNombreHeader() {
+  const el = document.getElementById('usuarioNombre');
+  if (el && usuarioActual) {
+    el.textContent = `${usuarioActual.nombre}${usuarioActual.rol === 'admin' ? ' (admin)' : ''}`;
+  }
+}
+
+async function iniciarFirebase() {
+  try {
+    if (typeof firebase === 'undefined') throw new Error('Firebase SDK no cargó.');
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    syncDisponible = true;
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) {
+        usuarioActual = null;
+        clientes = [];
+        renderLista();
+        mostrarLogin();
+        return;
+      }
+      try {
+        const perfil = await cargarPerfilUsuario(user.uid);
+        usuarioActual = {
+          uid: user.uid,
+          email: user.email,
+          nombre: perfil.nombre || user.email,
+          rol: perfil.rol === 'admin' ? 'admin' : 'asesor'
+        };
+        ocultarLogin();
+        actualizarNombreHeader();
+        renderWelcome();
+        await migrarClientesLocalesSiHaceFalta();
+        iniciarSincronizacionTiempoReal();
+      } catch (e) {
+        console.error('No se pudo cargar el perfil del usuario:', e);
+        mostrarLogin(e.message || 'No se pudo cargar tu cuenta.');
+        firebase.auth().signOut();
+      }
+    });
+  } catch (e) {
+    console.error('No se pudo conectar con el servidor de sincronización:', e);
+    syncDisponible = false;
+    mostrarLogin('No se pudo conectar con el servidor. Revisa tu conexión a internet.');
+  }
+}
+iniciarFirebase();
+
+// ─────────────────────────────────────────────────────────────
 // CÁLCULO PRINCIPAL
 // ─────────────────────────────────────────────────────────────
 function calcular(c) {
@@ -710,7 +894,7 @@ function renderForm(datos) {
       <div class="form-actions">
         <button class="btn-guardar" onclick="guardarCliente()">💾 Guardar y Calcular</button>
         <button class="btn-cancelar" onclick="renderWelcome()">Cancelar</button>
-        ${editandoId ? `<button class="btn-eliminar" onclick="pedirEliminar(${editandoId})">🗑 Eliminar</button>` : ''}
+        ${editandoId && usuarioActual?.rol === 'admin' ? `<button class="btn-eliminar" onclick="pedirEliminar(${editandoId})">🗑 Eliminar</button>` : ''}
       </div>
     </div>
   `;
@@ -860,15 +1044,21 @@ function leerForm() {
   if (editandoId) {
     const idx = clientes.findIndex(c => c.id === editandoId);
     datos.id = editandoId;
+    datos.creadoPorUid = clientes[idx]?.creadoPorUid || usuarioActual?.uid || null;
+    datos.creadoPorNombre = clientes[idx]?.creadoPorNombre || usuarioActual?.nombre || null;
     clientes[idx] = datos;
     guardarDatos(clientes);
+    guardarClienteEnServidor(datos);
     renderLista();
     verDetalle(editandoId);
     mostrarToast('✅ Cliente actualizado.');
   } else {
     datos.id = Date.now();
+    datos.creadoPorUid = usuarioActual?.uid || null;
+    datos.creadoPorNombre = usuarioActual?.nombre || null;
     clientes.unshift(datos);
     guardarDatos(clientes);
+    guardarClienteEnServidor(datos);
     renderLista();
     verDetalle(datos.id);
     mostrarToast('✅ Cliente guardado.');
@@ -1051,7 +1241,7 @@ document.getElementById('main').innerHTML = `
       <div class="detalle-btns no-print">
         <button class="back-link" onclick="renderWelcome()">← Volver</button>
         <button class="btn-editar" onclick="editarCliente(${id})">✏️ Editar</button>
-        <button class="btn-del"    onclick="pedirEliminar(${id})">🗑 Eliminar</button>
+        ${usuarioActual?.rol === 'admin' ? `<button class="btn-del" onclick="pedirEliminar(${id})">🗑 Eliminar</button>` : ''}
       </div>
 
       <div class="pantalla-detalle">
@@ -1261,8 +1451,10 @@ function cerrarModal() {
   idEliminar = null;
 }
 function confirmarEliminar() {
-  clientes = clientes.filter(c => c.id !== idEliminar);
+  const idBorrar = idEliminar;
+  clientes = clientes.filter(c => c.id !== idBorrar);
   guardarDatos(clientes);
+  eliminarClienteDelServidor(idBorrar);
   cerrarModal();
   renderLista();
   renderWelcome();
@@ -1280,6 +1472,7 @@ function registrarAccion(id, accion) {
   if (!Array.isArray(c.Bitacora)) c.Bitacora = [];
   c.Bitacora.unshift({ accion, fecha: new Date().toLocaleString('es-MX') });
   guardarDatos(clientes);
+  guardarClienteEnServidor(c);
 }
 
 function imprimirCliente(id) {

@@ -19,17 +19,40 @@
       <span class="brand-subtitle">Calculadora de Pensiones IMSS</span>
     </div>
   </div>
-  <div class="nav-btns">
+  <div class="nav-btns" style="display:none;">
+    <span id="usuarioNombre" style="color:#C9A84C; font-size:.85rem; margin-right:.5rem; align-self:center;"></span>
     <button class="btn-menu-movil" onclick="toggleMenuMovil()">☰</button>
     <button id="btnVista" class="active" onclick="mostrarVista('lista')">Clientes</button>
     <button onclick="mostrarVista('form'); modoNuevo()">+ Nuevo</button>
+    <button onclick="cerrarSesion()" title="Cerrar sesión">🚪</button>
   </div>
 </header>
 
 <!-- ═══════════════════════════════════════════════
+     LOGIN
+     ═══════════════════════════════════════════════ -->
+<div id="loginOverlay" style="display:flex; min-height:70vh; align-items:center; justify-content:center; padding:2rem;">
+  <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:12px; padding:2rem; max-width:340px; width:100%;">
+    <h3 style="color:#C9A84C; margin-bottom:1.25rem; text-align:center;">Iniciar sesión</h3>
+    <div style="display:flex; flex-direction:column; gap:.85rem;">
+      <div>
+        <label style="font-size:.8rem; color:#9A9A9A;">Correo</label>
+        <input type="email" id="loginEmail" placeholder="tu@correo.com" style="width:100%; padding:.6rem; border-radius:6px; border:1px solid #2A2A2A; background:#141414; color:#fff;">
+      </div>
+      <div>
+        <label style="font-size:.8rem; color:#9A9A9A;">Contraseña</label>
+        <input type="password" id="loginPass" placeholder="••••••••" style="width:100%; padding:.6rem; border-radius:6px; border:1px solid #2A2A2A; background:#141414; color:#fff;">
+      </div>
+      <button onclick="iniciarSesion()" style="background:#C9A84C; color:#0D0D0D; font-weight:600; padding:.65rem; border-radius:6px; border:none; cursor:pointer; margin-top:.5rem;">Entrar</button>
+      <div id="loginError" style="color:#e05252; font-size:.8rem; text-align:center; min-height:1.2em;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
      LAYOUT PRINCIPAL
      ═══════════════════════════════════════════════ -->
-<div class="app">
+<div class="app" style="display:none;">
 
   <!-- Sidebar con lista de clientes -->
   <aside>
@@ -82,6 +105,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="script.js"></script>
 
 </body>
