@@ -1340,19 +1340,13 @@ async function descargarPDF(id) {
 
   const headerH = 26, clientBandH = 10, marginBottom = 18, marginSide = 10; // mm
   const marginTop = headerH + clientBandH; // mm — reserva espacio para encabezado + datos del cliente
-  const opt = {
-    margin: [marginTop, marginSide, marginBottom, marginSide],
-    filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  };
+  const pageWmm = 215.9;   // ancho carta
+  const maxPageHmm = 279.4; // alto carta — límite antes de pasar a paginación real de 2+ hojas
 
   try {
     let canvas;
     try {
-      canvas = await html2canvas(bodyEl, opt.html2canvas);
+      canvas = await html2canvas(bodyEl, { scale: 2, useCORS: true });
     } finally {
       if (tempWrap.parentNode) document.body.removeChild(tempWrap);
     }
@@ -1360,6 +1354,25 @@ async function descargarPDF(id) {
     if (!canvas || canvas.width === 0 || canvas.height === 0) {
       throw new Error('Lienzo vacío al capturar el documento.');
     }
+
+    // Igual que la vista de impresión (@page{size:auto}), ajustamos el alto
+    // de la hoja al contenido real en vez de usar un tamaño fijo — así no
+    // queda un hueco en blanco cuando el documento es corto. Solo si el
+    // contenido es más largo que una hoja carta completa, usamos tamaño
+    // estándar para que sí pagine correctamente a una 2ª hoja.
+    const contentWmm = pageWmm - marginSide * 2;
+    const contentHmm = canvas.height * (contentWmm / canvas.width);
+    const totalHmm = marginTop + contentHmm + marginBottom;
+    const jsPDFFormat = totalHmm <= maxPageHmm ? [pageWmm, totalHmm] : [pageWmm, maxPageHmm];
+
+    const opt = {
+      margin: [marginTop, marginSide, marginBottom, marginSide],
+      filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: jsPDFFormat, orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
 
     const worker = html2pdf().set(opt).from(canvas, 'canvas').toPdf();
     const pdf = await worker.get('pdf');
