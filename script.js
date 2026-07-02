@@ -903,10 +903,6 @@ function documentoHTML(c) {
             <div style="font-size:12px;color:#8a8064;margin-top:3px;">Folio: ${c.FOLIO || '—'}</div>
           </div>
         </div>
-        <div class="imp-cliente-info" style="padding:14px 36px 4px;border-left:1px solid #d8d3c4;border-right:1px solid #d8d3c4;">
-          <div style="font-size:20px;font-weight:bold;color:#0D0D0D;">${c.CLIENTE || ''}</div>
-          <div style="font-size:13px;color:#6b6558;margin-top:3px;">NSS ${c.NSS || '—'} &nbsp;·&nbsp; CURP ${c.CURP || '—'} &nbsp;·&nbsp; Emitido ${c.FECHACAPTURA || new Date().toLocaleDateString('es-MX')}</div>
-        </div>
       </td></tr>
     </thead>
 
@@ -923,7 +919,12 @@ function documentoHTML(c) {
       <tr><td>
   <div class="imp-body" style="width:100%;background:#ffffff;color:#0D0D0D;font-family:Arial, sans-serif;">
 
-    <div style="margin:14px 36px;background:#faf6ea;border:1px solid #e6dcc0;border-radius:8px;padding:13px 22px;display:flex;justify-content:space-between;align-items:center;page-break-inside:avoid;break-inside:avoid;">
+    <div style="padding:0 36px 6px;">
+      <div style="font-size:20px;font-weight:bold;color:#0D0D0D;">${c.CLIENTE || ''}</div>
+      <div style="font-size:13px;color:#6b6558;margin-top:3px;">NSS ${c.NSS || '—'} &nbsp;·&nbsp; CURP ${c.CURP || '—'} &nbsp;·&nbsp; Emitido ${c.FECHACAPTURA || new Date().toLocaleDateString('es-MX')}</div>
+    </div>
+
+    <div style="margin:20px 36px;background:#faf6ea;border:1px solid #e6dcc0;border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;page-break-inside:avoid;break-inside:avoid;">
       <div>
         <div style="font-size:11px;letter-spacing:1.2px;color:#8a7328;text-transform:uppercase;">Fondeo total</div>
         <div style="font-size:30px;font-weight:bold;color:#0D0D0D;margin-top:3px;">${fmt(c.FondeoTotal)}</div>
@@ -940,7 +941,7 @@ function documentoHTML(c) {
       </div>
     </div>
 
-    <div style="margin:0 36px 14px;display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
+    <div style="margin:0 36px 20px;display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
       <div style="flex:1;">
         <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Datos personales</div>
         <table style="width:100%;font-size:12px;border-collapse:collapse;">
@@ -960,7 +961,7 @@ function documentoHTML(c) {
       </div>
     </div>
 
-    <div style="margin:0 36px 12px;page-break-inside:avoid;break-inside:avoid;">
+    <div style="margin:0 36px 20px;page-break-inside:avoid;break-inside:avoid;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Resumen de costos</div>
       <table style="width:100%;font-size:12px;border-collapse:collapse;">
         <tr><td style="color:#6b6558;padding:4px 0;">Costo total</td><td style="text-align:right;color:#0D0D0D;font-weight:bold;">${fmt(c.CostoTotal)}</td></tr>
@@ -969,9 +970,9 @@ function documentoHTML(c) {
       </table>
     </div>
 
-    <div style="margin:0 36px 12px;">
+    <div style="margin:0 36px 20px;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Desglose de cálculo</div>
-      <div style="display:flex;gap:24px;align-items:flex-start;page-break-inside:avoid;break-inside:avoid;">
+      <div style="display:flex;gap:24px;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid;">
         <div style="flex:1;">
           <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">PENSIÓN DIRECTA</div>
           <table style="width:100%;font-size:12px;border-collapse:collapse;">
@@ -979,15 +980,6 @@ function documentoHTML(c) {
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Salario mínimo del año</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._SalarioMinimo)}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Pensión al salario</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.PensionAlSalario)}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Pensión directa total</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.PensionDirectaTotal)}</td></tr>
-          </table>
-
-          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin:12px 0 6px;">FONDEO</div>
-          <table style="width:100%;font-size:12px;border-collapse:collapse;">
-            <tr><td style="color:#6b6558;padding:3px 0;">AFORE</td><td style="text-align:right;color:#0D0D0D;">${fmt(c.AforeCantidad)}</td></tr>
-            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Reintegro</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Reintegro)}</td></tr>
-            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">1er mes de pensión</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.UnMesPension)}</td></tr>
-            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Capitalización</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Capitalizacion)}</td></tr>
-            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Fondeo total</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.FondeoTotal)}</td></tr>
           </table>
         </div>
         <div style="flex:1;">
@@ -1001,8 +993,21 @@ function documentoHTML(c) {
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Salario mejorado</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c._NuevoSalario)}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Pensión mejorada</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.PensionMejorada)}</td></tr>
           </table>
-
-          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin:12px 0 6px;">COSTOS</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">FONDEO</div>
+          <table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr><td style="color:#6b6558;padding:3px 0;">AFORE</td><td style="text-align:right;color:#0D0D0D;">${fmt(c.AforeCantidad)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Reintegro</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Reintegro)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">1er mes de pensión</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.UnMesPension)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Capitalización</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Capitalizacion)}</td></tr>
+            <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;font-weight:bold;">Fondeo total</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;font-weight:bold;">${fmt(c.FondeoTotal)}</td></tr>
+          </table>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:bold;color:#8a7328;margin-bottom:6px;">COSTOS</div>
           <table style="width:100%;font-size:12px;border-collapse:collapse;">
             <tr><td style="color:#6b6558;padding:3px 0;">Costo sin interés</td><td style="text-align:right;color:#0D0D0D;">${fmt(c.CostoSinInteres)}</td></tr>
             <tr><td style="color:#6b6558;padding:3px 0;border-top:1px solid #f0ede3;">Interés</td><td style="text-align:right;color:#0D0D0D;border-top:1px solid #f0ede3;">${fmt(c.Interes)}</td></tr>
@@ -1013,7 +1018,7 @@ function documentoHTML(c) {
     </div>
 
     ${c.PlanA ? `
-    <div style="margin:0 36px 16px;page-break-inside:avoid;break-inside:avoid;">
+    <div style="margin:0 36px 24px;page-break-inside:avoid;break-inside:avoid;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Planes de financiamiento</div>
       <table style="width:100%;font-size:12px;border-collapse:collapse;">
         ${filaPlan('A · Propios — sobrante/faltante', fmt(c.PlanA.sobranteFaltante))}
@@ -1021,6 +1026,19 @@ function documentoHTML(c) {
         ${filaPlan('C · Pensiona Plus + Autofinanciamiento', fmt(c.PlanC.sumaCreditos), 'sobrante ' + fmt(c.PlanC.sobranteFaltante))}
       </table>
     </div>` : ''}
+
+    <table style="width:100%;border-collapse:collapse;margin:0 0 26px;page-break-inside:avoid;break-inside:avoid;">
+      <tr>
+        <td style="width:50%;padding:0 36px;">
+          <div style="border-bottom:1px solid #6b6558;height:46px;"></div>
+          <div style="font-size:11px;color:#6b6558;margin-top:5px;text-align:center;">Firma del cliente</div>
+        </td>
+        <td style="width:50%;padding:0 36px;">
+          <div style="border-bottom:1px solid #6b6558;height:46px;"></div>
+          <div style="font-size:11px;color:#6b6558;margin-top:5px;text-align:center;">Firma del Empleado / Asesor / Cerrador</div>
+        </td>
+      </tr>
+    </table>
 
   </div>
       </td></tr>
@@ -1279,100 +1297,9 @@ function registrarAccion(id, accion) {
   guardarDatos(clientes);
 }
 
-async function construirPDFCliente(c) {
-  const contenedor = document.getElementById('documentoOficial');
-  const bodyEl = document.querySelector('#documentoOficial .imp-body');
-  if (!bodyEl || !contenedor) return null;
-
-  const headerBarH = 28;   // alto de la franja negra
-  const clienteInfoH = 15; // espacio extra para nombre/NSS/CURP debajo
-  const marginTop = headerBarH + clienteInfoH;
-  const marginBottom = 20, marginSide = 10; // mm
-  const opt = {
-    margin: [marginTop, marginSide, marginBottom, marginSide],
-    filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  };
-
-  const worker = html2pdf().set(opt).from(bodyEl).toPdf();
-  const pdf = await worker.get('pdf');
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
-  const totalPages = pdf.internal.getNumberOfPages();
-  const logoData = await getLogoDataURL();
-  const folio = c.FOLIO || '—';
-  const fecha = c.FECHACAPTURA || new Date().toLocaleDateString('es-MX');
-  const nombre = c.CLIENTE || '';
-  const nss = c.NSS || '—';
-  const curp = c.CURP || '—';
-
-  for (let i = 1; i <= totalPages; i++) {
-    pdf.setPage(i);
-
-    // ── Encabezado (siempre arriba) ──
-    pdf.setFillColor(13, 13, 13);
-    pdf.rect(0, 0, pageW, headerBarH, 'F');
-    pdf.setDrawColor(201, 168, 76);
-    pdf.setLineWidth(1.2);
-    pdf.line(0, headerBarH, pageW, headerBarH);
-    if (logoData) pdf.addImage(logoData, 'JPEG', marginSide, 5, 14, 14, undefined, 'FAST');
-    pdf.setTextColor(201, 168, 76);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15);
-    pdf.text('ÁUREA', marginSide + 18, 13);
-    pdf.setTextColor(232, 201, 122);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
-    pdf.text('ASESORÍA INTEGRAL', marginSide + 18, 17.5);
-    pdf.setTextColor(232, 201, 122);
-    pdf.setFontSize(9.5);
-    pdf.text('Proyección de pensión IMSS', pageW - marginSide, 11, { align: 'right' });
-    pdf.setTextColor(138, 128, 100);
-    pdf.setFontSize(7.5);
-    pdf.text(`Folio: ${folio}`, pageW - marginSide, 15.5, { align: 'right' });
-
-    // ── Nombre del cliente (se repite en cada página) ──
-    pdf.setTextColor(13, 13, 13);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(12.5);
-    pdf.text(nombre, marginSide, headerBarH + 8);
-    pdf.setTextColor(107, 101, 88);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
-    pdf.text(`NSS ${nss}  ·  CURP ${curp}  ·  Emitido ${fecha}`, marginSide, headerBarH + 13);
-
-    // ── Pie de página (siempre abajo) ──
-    const footY = pageH - marginBottom + 6;
-    pdf.setFillColor(13, 13, 13);
-    pdf.rect(0, footY, pageW, marginBottom - 6, 'F');
-    pdf.setTextColor(138, 128, 100);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5);
-    pdf.text('Áurea Asesoría Integral · Documento generado automáticamente', marginSide, footY + 8);
-    pdf.setTextColor(201, 168, 76);
-    pdf.text(fecha, pageW - marginSide, footY + 8, { align: 'right' });
-  }
-
-  return { pdf, filename: opt.filename };
-}
-
-async function imprimirCliente(id) {
+function imprimirCliente(id) {
   registrarAccion(id, 'Impresión');
-  const c = clientes.find(x => x.id === id);
-  if (!c || typeof html2pdf === 'undefined') { window.print(); return; }
-
-  mostrarToast('🖨️ Preparando impresión…');
-  try {
-    const resultado = await construirPDFCliente(c);
-    if (!resultado) { window.print(); return; }
-    resultado.pdf.autoPrint();
-    const url = resultado.pdf.output('bloburl');
-    const ventana = window.open(url, '_blank');
-    if (!ventana) {
-      mostrarToast('⚠️ Tu navegador bloqueó la ventana. Permite ventanas emergentes para imprimir.');
-    }
-  } catch (e) {
-    console.error('imprimirCliente error:', e);
-    window.print();
-  }
+  window.print();
 }
 
 let _logoDataURLPromise = null;
@@ -1409,11 +1336,64 @@ async function descargarPDF(id) {
 
   mostrarToast('📄 Generando PDF…');
 
-  try {
-    const resultado = await construirPDFCliente(c);
-    if (!resultado) { window.print(); return; }
+  const bodyEl = document.querySelector('#documentoOficial .imp-body');
+  if (!bodyEl) { window.print(); return; }
 
-    resultado.pdf.save(resultado.filename);
+  const marginTop = 32, marginBottom = 20, marginSide = 10; // mm
+  const opt = {
+    margin: [marginTop, marginSide, marginBottom, marginSide],
+    filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+
+  try {
+    const worker = html2pdf().set(opt).from(bodyEl).toPdf();
+    const pdf = await worker.get('pdf');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const totalPages = pdf.internal.getNumberOfPages();
+    const logoData = await getLogoDataURL();
+    const folio = c.FOLIO || '—';
+    const fecha = c.FECHACAPTURA || new Date().toLocaleDateString('es-MX');
+
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+
+      // ── Encabezado (siempre arriba) ──
+      pdf.setFillColor(13, 13, 13);
+      pdf.rect(0, 0, pageW, marginTop - 4, 'F');
+      pdf.setDrawColor(201, 168, 76);
+      pdf.setLineWidth(1.2);
+      pdf.line(0, marginTop - 4, pageW, marginTop - 4);
+      if (logoData) pdf.addImage(logoData, 'JPEG', marginSide, 5, 14, 14, undefined, 'FAST');
+      pdf.setTextColor(201, 168, 76);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15);
+      pdf.text('ÁUREA', marginSide + 18, 13);
+      pdf.setTextColor(232, 201, 122);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
+      pdf.text('ASESORÍA INTEGRAL', marginSide + 18, 17.5);
+      pdf.setTextColor(232, 201, 122);
+      pdf.setFontSize(9.5);
+      pdf.text('Proyección de pensión IMSS', pageW - marginSide, 11, { align: 'right' });
+      pdf.setTextColor(138, 128, 100);
+      pdf.setFontSize(7.5);
+      pdf.text(`Folio: ${folio}`, pageW - marginSide, 15.5, { align: 'right' });
+
+      // ── Pie de página (siempre abajo) ──
+      const footY = pageH - marginBottom + 6;
+      pdf.setFillColor(13, 13, 13);
+      pdf.rect(0, footY, pageW, marginBottom - 6, 'F');
+      pdf.setTextColor(138, 128, 100);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5);
+      pdf.text('Áurea Asesoría Integral · Documento generado automáticamente', marginSide, footY + 8);
+      pdf.setTextColor(201, 168, 76);
+      pdf.text(fecha, pageW - marginSide, footY + 8, { align: 'right' });
+    }
+
+    pdf.save(opt.filename);
     mostrarToast('✅ PDF descargado.');
   } catch (e) {
     console.error('descargarPDF error:', e);

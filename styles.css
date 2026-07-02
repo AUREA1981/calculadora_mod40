@@ -285,32 +285,14 @@ input[type=date]::-webkit-calendar-picker-indicator:hover {
 }
 .resultado-banner .grid-montos {
   display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 1rem 2rem;
+  grid-template-columns: repeat(4,1fr);
+  gap: 1rem;
   flex: 1;
-  min-width: 0;
 }
-.resultado-banner .monto-item { min-width: 0; }
 .resultado-banner .monto-item .ml { font-size: .72rem; opacity: .65; }
 .resultado-banner .monto-item .mv {
   font-size: 1.1rem; font-weight: 600;
   font-family: 'IBM Plex Mono', monospace;
-  overflow-wrap: break-word;
-}
-
-/* ── Variante v2: total arriba, 2x2 abajo (evita que los números se corten) ── */
-.resultado-banner-v2 {
-  display: block;
-}
-.resultado-banner-v2 .total-box { margin-bottom: 1.25rem; }
-.resultado-banner-v2 .grid-montos {
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem 2rem;
-}
-.resultado-banner-v2 .monto-item .mv { font-size: 1.25rem; white-space: normal; overflow-wrap: break-word; }
-@media (max-width: 480px) {
-  .resultado-banner-v2 .grid-montos { grid-template-columns: 1fr; }
-  .resultado-banner-v2 .monto-item .mv { white-space: normal; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -443,8 +425,6 @@ input[type=date]::-webkit-calendar-picker-indicator:hover {
 @media (max-width: 1100px) {
   .g3, .g4 { grid-template-columns: repeat(2, 1fr); }
   aside { width: 220px; }
-  .resultado-banner .grid-montos { grid-template-columns: repeat(2,1fr); }
-  .resultado-banner .divider { display: none; }
 }
 @media (max-width: 700px) {
   aside { display: none; }
@@ -605,16 +585,9 @@ header .brand-subtitle {
 }
 
 
-.solo-impresion {
-  display: block;
-  position: absolute;
-  top: 0;
-  left: -10000px;
-  width: 794px;
-  z-index: -1;
-}
+.solo-impresion { display: none; }
 @media print {
-  .solo-impresion { position: static !important; left: 0 !important; width: auto !important; }
+  .solo-impresion { display: block !important; }
   .pantalla-detalle { display: none !important; }
 }
 .firma-block {
@@ -677,7 +650,6 @@ header .brand-subtitle {
 
 @media (max-width: 1100px) and (min-width: 701px) {
   .grid.g2 { grid-template-columns: 1fr; }
-  .resultado-banner-v2 .monto-item .mv { font-size: 1rem; }
 }
 
 
@@ -702,11 +674,24 @@ header .brand-subtitle {
 }
 
 
-/* El "shell" de altura fija con scroll interno se quitó por completo:
-   causaba que los botones de Guardar/Cancelar quedaran fuera de la vista
-   en distintos anchos de tablet (sobre todo en horizontal). Ahora todas
-   las pantallas usan scroll normal de página, sin excepción. El header
-   se mantiene visible arriba gracias a `position: sticky` (ver arriba). */
-
+@media (min-width: 701px) {
+  html, body { height: 100%; }
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  header { flex-shrink: 0; }
+  .app {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+  }
+  aside { overflow-y: auto; }
+  main { flex: 1; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
+  .site-footer { flex-shrink: 0; padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); }
+}
 
 
