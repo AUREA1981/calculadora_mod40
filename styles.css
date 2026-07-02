@@ -288,29 +288,11 @@ input[type=date]::-webkit-calendar-picker-indicator:hover {
   grid-template-columns: repeat(4,1fr);
   gap: 1rem;
   flex: 1;
-  min-width: 0;
 }
-.resultado-banner .monto-item { min-width: 0; }
 .resultado-banner .monto-item .ml { font-size: .72rem; opacity: .65; }
 .resultado-banner .monto-item .mv {
   font-size: 1.1rem; font-weight: 600;
   font-family: 'IBM Plex Mono', monospace;
-  overflow-wrap: break-word;
-}
-
-/* ── Variante v2: total arriba, 2x2 abajo (evita que los números se corten) ── */
-.resultado-banner-v2 {
-  display: block;
-}
-.resultado-banner-v2 .total-box { margin-bottom: 1.25rem; }
-.resultado-banner-v2 .grid-montos {
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem 2rem;
-}
-.resultado-banner-v2 .monto-item .mv { font-size: 1.25rem; white-space: nowrap; }
-@media (max-width: 480px) {
-  .resultado-banner-v2 .grid-montos { grid-template-columns: 1fr; }
-  .resultado-banner-v2 .monto-item .mv { white-space: normal; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -443,8 +425,6 @@ input[type=date]::-webkit-calendar-picker-indicator:hover {
 @media (max-width: 1100px) {
   .g3, .g4 { grid-template-columns: repeat(2, 1fr); }
   aside { width: 220px; }
-  .resultado-banner .grid-montos { grid-template-columns: repeat(2,1fr); }
-  .resultado-banner .divider { display: none; }
 }
 @media (max-width: 700px) {
   aside { display: none; }
