@@ -1027,19 +1027,6 @@ function documentoHTML(c) {
       </table>
     </div>` : ''}
 
-    <table style="width:100%;border-collapse:collapse;margin:0 0 26px;page-break-inside:avoid;break-inside:avoid;">
-      <tr>
-        <td style="width:50%;padding:0 36px;">
-          <div style="border-bottom:1px solid #6b6558;height:46px;"></div>
-          <div style="font-size:11px;color:#6b6558;margin-top:5px;text-align:center;">Firma del cliente</div>
-        </td>
-        <td style="width:50%;padding:0 36px;">
-          <div style="border-bottom:1px solid #6b6558;height:46px;"></div>
-          <div style="font-size:11px;color:#6b6558;margin-top:5px;text-align:center;">Firma del Empleado / Asesor / Cerrador</div>
-        </td>
-      </tr>
-    </table>
-
   </div>
       </td></tr>
     </tbody>
