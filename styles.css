@@ -552,13 +552,13 @@ header .brand-subtitle {
   }
   @page {
     size: auto;
-    margin: 10mm;
+    margin: 8mm;
   }
   .imp-doc thead { display: table-header-group; }
   .imp-doc tfoot { display: table-footer-group; }
   .imp-header {
     background: #0D0D0D;
-    padding: 26px 36px;
+    padding: 22px 36px;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -569,7 +569,7 @@ header .brand-subtitle {
   }
   .imp-footer {
     background: #0D0D0D;
-    padding: 12px 36px;
+    padding: 9px 36px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -587,7 +587,7 @@ header .brand-subtitle {
     border-left: 1px solid #d8d3c4;
     border-right: 1px solid #d8d3c4;
     border-bottom: 1px solid #e6dcc0;
-    padding: 14px 36px 12px;
+    padding: 10px 36px 8px;
   }
 }
 

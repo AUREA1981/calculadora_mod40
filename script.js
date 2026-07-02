@@ -925,7 +925,7 @@ function documentoHTML(c) {
       <tr><td>
   <div class="imp-body" style="width:100%;background:#ffffff;color:#0D0D0D;font-family:Arial, sans-serif;">
 
-    <div style="margin:20px 36px;background:#faf6ea;border:1px solid #e6dcc0;border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;page-break-inside:avoid;break-inside:avoid;">
+    <div style="margin:14px 36px 16px;background:#faf6ea;border:1px solid #e6dcc0;border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;page-break-inside:avoid;break-inside:avoid;">
       <div>
         <div style="font-size:11px;letter-spacing:1.2px;color:#8a7328;text-transform:uppercase;">Fondeo total</div>
         <div style="font-size:30px;font-weight:bold;color:#0D0D0D;margin-top:3px;">${fmt(c.FondeoTotal)}</div>
@@ -942,7 +942,7 @@ function documentoHTML(c) {
       </div>
     </div>
 
-    <div style="margin:0 36px 20px;display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
+    <div style="margin:0 36px 16px;display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
       <div style="flex:1;">
         <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Datos personales</div>
         <table style="width:100%;font-size:12px;border-collapse:collapse;">
@@ -962,7 +962,7 @@ function documentoHTML(c) {
       </div>
     </div>
 
-    <div style="margin:0 36px 20px;page-break-inside:avoid;break-inside:avoid;">
+    <div style="margin:0 36px 16px;page-break-inside:avoid;break-inside:avoid;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Resumen de costos</div>
       <table style="width:100%;font-size:12px;border-collapse:collapse;">
         <tr><td style="color:#6b6558;padding:4px 0;">Costo total</td><td style="text-align:right;color:#0D0D0D;font-weight:bold;">${fmt(c.CostoTotal)}</td></tr>
@@ -971,7 +971,7 @@ function documentoHTML(c) {
       </table>
     </div>
 
-    <div style="margin:0 36px 20px;">
+    <div style="margin:0 36px 16px;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Desglose de cálculo</div>
       <div style="display:flex;gap:24px;page-break-inside:avoid;break-inside:avoid;">
         <div style="flex:1;">
@@ -1016,7 +1016,7 @@ function documentoHTML(c) {
 
 
     ${c.PlanA ? `
-    <div style="margin:0 36px 24px;page-break-inside:avoid;break-inside:avoid;">
+    <div style="margin:0 36px 14px;">
       <div style="font-size:11px;font-weight:bold;color:#8a7328;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #e6dcc0;padding-bottom:6px;margin-bottom:8px;">Planes de financiamiento</div>
       <table style="width:100%;font-size:12px;border-collapse:collapse;">
         ${filaPlan('A · Propios — sobrante/faltante', fmt(c.PlanA.sobranteFaltante))}
@@ -1324,13 +1324,26 @@ async function descargarPDF(id) {
   const bodyEl = document.querySelector('#documentoOficial .imp-body');
   if (!bodyEl) { window.print(); return; }
 
-  const headerH = 28, clientBandH = 12, marginBottom = 20, marginSide = 10; // mm
+  const headerH = 26, clientBandH = 10, marginBottom = 18, marginSide = 10; // mm
   const marginTop = headerH + clientBandH; // mm — reserva espacio para encabezado + datos del cliente
   const opt = {
     margin: [marginTop, marginSide, marginBottom, marginSide],
     filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      // El documento oficial está oculto (display:none) fuera de la vista de impresión.
+      // Sin esto, html2canvas captura un lienzo en blanco porque el elemento no tiene
+      // tamaño real en la página. Aquí lo hacemos visible SOLO dentro del clon que usa
+      // html2canvas para tomar la "foto", sin afectar la pantalla real del usuario.
+      onclone: (clonedDoc) => {
+        const oficial = clonedDoc.getElementById('documentoOficial');
+        if (oficial) oficial.style.display = 'block';
+        const pantalla = clonedDoc.querySelector('.pantalla-detalle');
+        if (pantalla) pantalla.style.display = 'none';
+      }
+    },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css', 'legacy'] }
   };
@@ -1373,10 +1386,10 @@ async function descargarPDF(id) {
       // ── Datos del cliente (repetido en cada página, debajo del encabezado) ──
       pdf.setTextColor(13, 13, 13);
       pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11.5);
-      pdf.text(nombreCliente, marginSide, headerH + 6.5);
+      pdf.text(nombreCliente, marginSide, headerH + 5);
       pdf.setTextColor(107, 101, 88);
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
-      pdf.text(datosCliente, marginSide, headerH + 10.5);
+      pdf.text(datosCliente, marginSide, headerH + 8.5);
       pdf.setDrawColor(230, 220, 192);
       pdf.setLineWidth(0.4);
       pdf.line(0, headerH + clientBandH, pageW, headerH + clientBandH);
