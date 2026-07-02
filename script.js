@@ -1313,7 +1313,7 @@ async function descargarPDF(id) {
   const c = clientes.find(x => x.id === id);
   if (!c) return;
 
-  if (typeof html2pdf === 'undefined') {
+  if (typeof html2pdf === 'undefined' || typeof html2canvas === 'undefined') {
     mostrarToast('🖨️ En el cuadro, elige "Guardar como PDF" y dale clic en Guardar.');
     window.print();
     return;
@@ -1321,8 +1321,22 @@ async function descargarPDF(id) {
 
   mostrarToast('📄 Generando PDF…');
 
-  const bodyEl = document.querySelector('#documentoOficial .imp-body');
-  if (!bodyEl) { window.print(); return; }
+  // Construimos el documento en un contenedor propio, real y visible para el
+  // navegador (nada de display:none ni trucos de opacidad), pero colocado
+  // fuera de la pantalla para que el usuario nunca lo vea. Esto evita por
+  // completo los problemas de captura en blanco que dependían del mecanismo
+  // interno de html2pdf.js.
+  const tempWrap = document.createElement('div');
+  tempWrap.style.position = 'fixed';
+  tempWrap.style.left = '-99999px';
+  tempWrap.style.top = '0';
+  tempWrap.style.width = '794px'; // ancho aprox. de una hoja carta/A4 a 96dpi
+  tempWrap.style.background = '#ffffff';
+  tempWrap.innerHTML = documentoHTML(c);
+  document.body.appendChild(tempWrap);
+
+  const bodyEl = tempWrap.querySelector('.imp-body');
+  if (!bodyEl) { document.body.removeChild(tempWrap); window.print(); return; }
 
   const headerH = 26, clientBandH = 10, marginBottom = 18, marginSide = 10; // mm
   const marginTop = headerH + clientBandH; // mm — reserva espacio para encabezado + datos del cliente
@@ -1330,26 +1344,24 @@ async function descargarPDF(id) {
     margin: [marginTop, marginSide, marginBottom, marginSide],
     filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      // El documento oficial está oculto (display:none) fuera de la vista de impresión.
-      // Sin esto, html2canvas captura un lienzo en blanco porque el elemento no tiene
-      // tamaño real en la página. Aquí lo hacemos visible SOLO dentro del clon que usa
-      // html2canvas para tomar la "foto", sin afectar la pantalla real del usuario.
-      onclone: (clonedDoc) => {
-        const oficial = clonedDoc.getElementById('documentoOficial');
-        if (oficial) oficial.style.display = 'block';
-        const pantalla = clonedDoc.querySelector('.pantalla-detalle');
-        if (pantalla) pantalla.style.display = 'none';
-      }
-    },
+    html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css', 'legacy'] }
   };
 
   try {
-    const worker = html2pdf().set(opt).from(bodyEl).toPdf();
+    let canvas;
+    try {
+      canvas = await html2canvas(bodyEl, opt.html2canvas);
+    } finally {
+      if (tempWrap.parentNode) document.body.removeChild(tempWrap);
+    }
+
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Lienzo vacío al capturar el documento.');
+    }
+
+    const worker = html2pdf().set(opt).from(canvas, 'canvas').toPdf();
     const pdf = await worker.get('pdf');
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
