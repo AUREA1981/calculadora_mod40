@@ -674,24 +674,11 @@ header .brand-subtitle {
 }
 
 
-@media (min-width: 1101px) {
-  html, body { height: 100%; }
-  body {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-  }
-  header { flex-shrink: 0; }
-  .app {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-  }
-  aside { overflow-y: auto; }
-  main { flex: 1; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
-  .site-footer { flex-shrink: 0; padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); }
-}
+/* El "shell" de altura fija con scroll interno se quitó por completo:
+   causaba que los botones de Guardar/Cancelar quedaran fuera de la vista
+   en distintos anchos de tablet (sobre todo en horizontal). Ahora todas
+   las pantallas usan scroll normal de página, sin excepción. El header
+   se mantiene visible arriba gracias a `position: sticky` (ver arriba). */
+
 
 
