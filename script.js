@@ -1284,9 +1284,85 @@ function registrarAccion(id, accion) {
   guardarDatos(clientes);
 }
 
-function imprimirCliente(id) {
+async function construirPDFCliente(c) {
+  const bodyEl = document.querySelector('#documentoOficial .imp-body');
+  if (!bodyEl) return null;
+
+  const marginTop = 32, marginBottom = 20, marginSide = 10; // mm
+  const opt = {
+    margin: [marginTop, marginSide, marginBottom, marginSide],
+    filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+
+  const worker = html2pdf().set(opt).from(bodyEl).toPdf();
+  const pdf = await worker.get('pdf');
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const totalPages = pdf.internal.getNumberOfPages();
+  const logoData = await getLogoDataURL();
+  const folio = c.FOLIO || '—';
+  const fecha = c.FECHACAPTURA || new Date().toLocaleDateString('es-MX');
+
+  for (let i = 1; i <= totalPages; i++) {
+    pdf.setPage(i);
+
+    // ── Encabezado (siempre arriba) ──
+    pdf.setFillColor(13, 13, 13);
+    pdf.rect(0, 0, pageW, marginTop - 4, 'F');
+    pdf.setDrawColor(201, 168, 76);
+    pdf.setLineWidth(1.2);
+    pdf.line(0, marginTop - 4, pageW, marginTop - 4);
+    if (logoData) pdf.addImage(logoData, 'JPEG', marginSide, 5, 14, 14, undefined, 'FAST');
+    pdf.setTextColor(201, 168, 76);
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15);
+    pdf.text('ÁUREA', marginSide + 18, 13);
+    pdf.setTextColor(232, 201, 122);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
+    pdf.text('ASESORÍA INTEGRAL', marginSide + 18, 17.5);
+    pdf.setTextColor(232, 201, 122);
+    pdf.setFontSize(9.5);
+    pdf.text('Proyección de pensión IMSS', pageW - marginSide, 11, { align: 'right' });
+    pdf.setTextColor(138, 128, 100);
+    pdf.setFontSize(7.5);
+    pdf.text(`Folio: ${folio}`, pageW - marginSide, 15.5, { align: 'right' });
+
+    // ── Pie de página (siempre abajo) ──
+    const footY = pageH - marginBottom + 6;
+    pdf.setFillColor(13, 13, 13);
+    pdf.rect(0, footY, pageW, marginBottom - 6, 'F');
+    pdf.setTextColor(138, 128, 100);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5);
+    pdf.text('Áurea Asesoría Integral · Documento generado automáticamente', marginSide, footY + 8);
+    pdf.setTextColor(201, 168, 76);
+    pdf.text(fecha, pageW - marginSide, footY + 8, { align: 'right' });
+  }
+
+  return { pdf, filename: opt.filename };
+}
+
+async function imprimirCliente(id) {
   registrarAccion(id, 'Impresión');
-  window.print();
+  const c = clientes.find(x => x.id === id);
+  if (!c || typeof html2pdf === 'undefined') { window.print(); return; }
+
+  mostrarToast('🖨️ Preparando impresión…');
+  try {
+    const resultado = await construirPDFCliente(c);
+    if (!resultado) { window.print(); return; }
+    resultado.pdf.autoPrint();
+    const url = resultado.pdf.output('bloburl');
+    const ventana = window.open(url, '_blank');
+    if (!ventana) {
+      mostrarToast('⚠️ Tu navegador bloqueó la ventana. Permite ventanas emergentes para imprimir.');
+    }
+  } catch (e) {
+    console.error('imprimirCliente error:', e);
+    window.print();
+  }
 }
 
 let _logoDataURLPromise = null;
@@ -1323,64 +1399,11 @@ async function descargarPDF(id) {
 
   mostrarToast('📄 Generando PDF…');
 
-  const bodyEl = document.querySelector('#documentoOficial .imp-body');
-  if (!bodyEl) { window.print(); return; }
-
-  const marginTop = 32, marginBottom = 20, marginSide = 10; // mm
-  const opt = {
-    margin: [marginTop, marginSide, marginBottom, marginSide],
-    filename: `Proyeccion_${(c.CLIENTE || 'cliente').replace(/\s+/g, '_')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  };
-
   try {
-    const worker = html2pdf().set(opt).from(bodyEl).toPdf();
-    const pdf = await worker.get('pdf');
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const totalPages = pdf.internal.getNumberOfPages();
-    const logoData = await getLogoDataURL();
-    const folio = c.FOLIO || '—';
-    const fecha = c.FECHACAPTURA || new Date().toLocaleDateString('es-MX');
+    const resultado = await construirPDFCliente(c);
+    if (!resultado) { window.print(); return; }
 
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-
-      // ── Encabezado (siempre arriba) ──
-      pdf.setFillColor(13, 13, 13);
-      pdf.rect(0, 0, pageW, marginTop - 4, 'F');
-      pdf.setDrawColor(201, 168, 76);
-      pdf.setLineWidth(1.2);
-      pdf.line(0, marginTop - 4, pageW, marginTop - 4);
-      if (logoData) pdf.addImage(logoData, 'JPEG', marginSide, 5, 14, 14, undefined, 'FAST');
-      pdf.setTextColor(201, 168, 76);
-      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15);
-      pdf.text('ÁUREA', marginSide + 18, 13);
-      pdf.setTextColor(232, 201, 122);
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
-      pdf.text('ASESORÍA INTEGRAL', marginSide + 18, 17.5);
-      pdf.setTextColor(232, 201, 122);
-      pdf.setFontSize(9.5);
-      pdf.text('Proyección de pensión IMSS', pageW - marginSide, 11, { align: 'right' });
-      pdf.setTextColor(138, 128, 100);
-      pdf.setFontSize(7.5);
-      pdf.text(`Folio: ${folio}`, pageW - marginSide, 15.5, { align: 'right' });
-
-      // ── Pie de página (siempre abajo) ──
-      const footY = pageH - marginBottom + 6;
-      pdf.setFillColor(13, 13, 13);
-      pdf.rect(0, footY, pageW, marginBottom - 6, 'F');
-      pdf.setTextColor(138, 128, 100);
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5);
-      pdf.text('Áurea Asesoría Integral · Documento generado automáticamente', marginSide, footY + 8);
-      pdf.setTextColor(201, 168, 76);
-      pdf.text(fecha, pageW - marginSide, footY + 8, { align: 'right' });
-    }
-
-    pdf.save(opt.filename);
+    resultado.pdf.save(resultado.filename);
     mostrarToast('✅ PDF descargado.');
   } catch (e) {
     console.error('descargarPDF error:', e);
