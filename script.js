@@ -1054,12 +1054,11 @@ document.getElementById('main').innerHTML = `
       <div class="pantalla-detalle">
       <h4 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;color:var(--dorado);">${c.CLIENTE}</h4>
 
-      <div class="resultado-banner">
+      <div class="resultado-banner resultado-banner-v2">
         <div class="total-box">
           <div class="total-label">Fondeo Total</div>
           <div class="total-monto">${fmt(c.FondeoTotal)}</div>
         </div>
-        <div class="divider"></div>
         <div class="grid-montos">
           <div class="monto-item"><div class="ml">Pensión directa</div><div class="mv">${fmt(c.PensionDirectaTotal)}</div></div>
           <div class="monto-item"><div class="ml">Pensión mejorada</div><div class="mv">${fmt(c.PensionMejorada)}</div></div>

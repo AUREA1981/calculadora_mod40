@@ -298,6 +298,21 @@ input[type=date]::-webkit-calendar-picker-indicator:hover {
   overflow-wrap: break-word;
 }
 
+/* ── Variante v2: total arriba, 2x2 abajo (evita que los números se corten) ── */
+.resultado-banner-v2 {
+  display: block;
+}
+.resultado-banner-v2 .total-box { margin-bottom: 1.25rem; }
+.resultado-banner-v2 .grid-montos {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem 2rem;
+}
+.resultado-banner-v2 .monto-item .mv { font-size: 1.25rem; white-space: nowrap; }
+@media (max-width: 480px) {
+  .resultado-banner-v2 .grid-montos { grid-template-columns: 1fr; }
+  .resultado-banner-v2 .monto-item .mv { white-space: normal; }
+}
+
 /* ══════════════════════════════════════════════════════════
    BOTONES
    ══════════════════════════════════════════════════════════ */
