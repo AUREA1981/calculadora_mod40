@@ -192,7 +192,7 @@ main { flex: 1; padding: 2rem; overflow-y: auto; }
 /* ── Pantalla de bienvenida ── */
 .welcome {
   max-width: 480px;
-  margin: 6rem auto;
+  margin: 2.5rem auto;
   text-align: center;
 }
 .welcome .icon-circle {
