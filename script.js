@@ -81,7 +81,7 @@ const firebaseConfig = {
 
 let db = null;
 let syncDisponible = false;
-let usuarioActual = null; // { uid, email, nombre, rol: 'admin' | 'asesor' }
+let usuarioActual = null; // { uid, email, nombre, rol: 'admin' | 'cerrador' }
 let _unsubClientes = null;
 const COLECCION_CLIENTES = 'clientes';
 const COLECCION_USUARIOS = 'usuarios';
@@ -130,6 +130,48 @@ async function cargarPerfilUsuario(uid) {
   return doc.data();
 }
 
+// ── Gestión de usuarios (solo admin) ──────────────────────────
+// Crear un usuario nuevo requiere una instancia SECUNDARIA de Firebase:
+// si usáramos la app principal, crear la cuenta automáticamente
+// dejaría al admin con la sesión iniciada como el usuario nuevo
+// en vez de la suya. Con la app secundaria, se crea la cuenta y
+// se cierra esa sesión aparte, sin tocar la sesión del admin.
+let _appSecundaria = null;
+function obtenerAppSecundaria() {
+  if (!_appSecundaria) {
+    _appSecundaria = firebase.initializeApp(firebaseConfig, 'secundaria');
+  }
+  return _appSecundaria;
+}
+
+async function listarUsuarios() {
+  const snapshot = await db.collection(COLECCION_USUARIOS).get();
+  return snapshot.docs.map(d => ({ uid: d.id, ...d.data() }));
+}
+
+async function crearUsuario(email, password, nombre, rol) {
+  const appSec = obtenerAppSecundaria();
+  const authSec = appSec.auth();
+  const cred = await authSec.createUserWithEmailAndPassword(email, password);
+  const uid = cred.user.uid;
+  await authSec.signOut();
+  await db.collection(COLECCION_USUARIOS).doc(uid).set({ nombre, email, rol });
+  return uid;
+}
+
+async function actualizarUsuario(uid, nombre, rol) {
+  await db.collection(COLECCION_USUARIOS).doc(uid).update({ nombre, rol });
+}
+
+// "Revocar acceso": borra el perfil (usuarios/{uid}). Sin perfil, la
+// persona no puede volver a entrar aunque su cuenta de correo/contraseña
+// técnicamente siga existiendo en Firebase — queda bloqueada por completo
+// dentro de la calculadora. Borrar la cuenta de verdad requiere un
+// servidor con privilegios de administrador, que esta app no tiene.
+async function revocarAccesoUsuario(uid) {
+  await db.collection(COLECCION_USUARIOS).doc(uid).delete();
+}
+
 async function guardarClienteEnServidor(datos) {
   if (!syncDisponible) return;
   try {
@@ -176,7 +218,7 @@ async function migrarClientesLocalesSiHaceFalta() {
 
 // Escucha cambios en tiempo real: si CUALQUIER dispositivo agrega,
 // edita o elimina un cliente, aquí se refleja automáticamente.
-// El admin ve todos los clientes; cada asesor solo ve los suyos.
+// El admin ve todos los clientes; cada cerrador solo ve los suyos.
 function iniciarSincronizacionTiempoReal() {
   if (_unsubClientes) { _unsubClientes(); _unsubClientes = null; }
   const ref = usuarioActual.rol === 'admin'
@@ -200,8 +242,10 @@ function iniciarSincronizacionTiempoReal() {
 function actualizarNombreHeader() {
   const el = document.getElementById('usuarioNombre');
   if (el && usuarioActual) {
-    el.textContent = `${usuarioActual.nombre}${usuarioActual.rol === 'admin' ? ' (admin)' : ''}`;
+    el.textContent = `${usuarioActual.nombre} (${usuarioActual.rol === 'admin' ? 'admin' : 'cerrador'})`;
   }
+  const btnUsuarios = document.getElementById('btnUsuarios');
+  if (btnUsuarios) btnUsuarios.style.display = usuarioActual?.rol === 'admin' ? 'inline-block' : 'none';
 }
 
 async function iniciarFirebase() {
@@ -225,7 +269,7 @@ async function iniciarFirebase() {
           uid: user.uid,
           email: user.email,
           nombre: perfil.nombre || user.email,
-          rol: perfil.rol === 'admin' ? 'admin' : 'asesor'
+          rol: perfil.rol === 'admin' ? 'admin' : 'cerrador'
         };
         ocultarLogin();
         actualizarNombreHeader();
@@ -616,18 +660,179 @@ function renderWelcome() {
         <button class="btn-guardar" onclick="mostrarVista('form'); modoNuevo()">+ Agregar primer cliente</button>
       </div>`;
   } else {
+    const totalClientes = clientes.length;
+    const hoy = new Date().toLocaleDateString('es-MX');
+    const registradosHoy = clientes.filter(c => c.FECHACAPTURA === hoy).length;
+    const esAdminActual = usuarioActual?.rol === 'admin';
+    const recientes = clientes.slice(0, 5);
+
     main.innerHTML = `
-      <div class="welcome">
+      <div class="welcome" style="max-width:640px;">
         <div class="icon-circle">
           <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/>
           </svg>
         </div>
-        <h2>Selecciona un cliente</h2>
+        <h2>${esAdminActual ? 'Resumen general' : 'Tu resumen'}</h2>
         <p>Elige un cliente de la lista para ver su detalle, o agrega uno nuevo.</p>
+
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin:1.25rem 0;">
+          <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:10px; padding:1rem 1.5rem; min-width:140px;">
+            <div style="font-size:1.6rem; font-weight:700; color:#C9A84C;">${totalClientes}</div>
+            <div style="font-size:.78rem; color:#9A9A9A;">${esAdminActual ? 'clientes en total' : 'tus clientes'}</div>
+          </div>
+          <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:10px; padding:1rem 1.5rem; min-width:140px;">
+            <div style="font-size:1.6rem; font-weight:700; color:#C9A84C;">${registradosHoy}</div>
+            <div style="font-size:.78rem; color:#9A9A9A;">registrados hoy</div>
+          </div>
+        </div>
+
         <button class="btn-guardar" onclick="mostrarVista('form'); modoNuevo()">+ Nuevo cliente</button>
+
+        ${recientes.length ? `
+        <div style="margin-top:1.75rem; text-align:left;">
+          <div style="font-size:.75rem; color:#9A9A9A; text-transform:uppercase; letter-spacing:.5px; margin-bottom:.5rem;">Más recientes</div>
+          <div style="display:flex; flex-direction:column; gap:.4rem;">
+            ${recientes.map(c => `
+              <div onclick="verDetalle(${c.id})" style="cursor:pointer; background:#1E1E1E; border:1px solid #2A2A2A; border-radius:8px; padding:.6rem .85rem; display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#fff; font-size:.9rem;">${c.CLIENTE || '(Sin nombre)'}</span>
+                <span style="color:#9A9A9A; font-size:.78rem;">${c.FECHACAPTURA || ''}</span>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
       </div>`;
   }
+}
+
+// ─────────────────────────────────────────────────────────────
+// GESTIÓN DE USUARIOS (solo admin)
+// ─────────────────────────────────────────────────────────────
+async function renderUsuarios() {
+  if (usuarioActual?.rol !== 'admin') { renderWelcome(); return; }
+  const main = document.getElementById('main');
+  main.innerHTML = `<div class="welcome"><p style="color:#9A9A9A;">Cargando usuarios…</p></div>`;
+
+  let usuarios = [];
+  try {
+    usuarios = await listarUsuarios();
+    usuarios.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+  } catch (e) {
+    console.error('Error listando usuarios:', e);
+    main.innerHTML = `<div class="welcome"><p style="color:#e05252;">No se pudo cargar la lista de usuarios.</p></div>`;
+    return;
+  }
+
+  main.innerHTML = `
+    <div class="form-wrap">
+      <div class="section-card">
+        <div class="sc-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>👥 Usuarios con acceso</span>
+          <button class="btn-nuevo" onclick="formUsuario()">+ Nuevo usuario</button>
+        </div>
+        <div class="sc-body">
+          <div id="formUsuarioWrap"></div>
+          <table class="detail-table" style="width:100%;">
+            <thead><tr><th style="text-align:left;">Nombre</th><th style="text-align:left;">Correo</th><th style="text-align:left;">Rol</th><th></th></tr></thead>
+            <tbody>
+              ${usuarios.map(u => `
+                <tr>
+                  <td>${u.nombre || '—'}</td>
+                  <td style="color:#9A9A9A;">${u.email || '—'}</td>
+                  <td>${u.rol === 'admin' ? 'Admin' : 'Cerrador'}</td>
+                  <td style="white-space:nowrap;">
+                    <button class="btn-editar" style="padding:.3rem .6rem;font-size:.78rem;" onclick="formUsuario('${u.uid}')">✏️</button>
+                    ${u.uid !== usuarioActual.uid ? `<button class="btn-del" style="padding:.3rem .6rem;font-size:.78rem;" onclick="confirmarRevocarAcceso('${u.uid}', '${(u.nombre || u.email || '').replace(/'/g, "\\'")}')">🚫 Revocar</button>` : `<span style="color:#9A9A9A;font-size:.78rem;">(tú)</span>`}
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function formUsuario(uid) {
+  const wrap = document.getElementById('formUsuarioWrap');
+  if (!wrap) return;
+  const editando = !!uid;
+  let datos = { nombre: '', email: '', rol: 'cerrador' };
+  if (editando) {
+    listarUsuarios().then(usuarios => {
+      const u = usuarios.find(x => x.uid === uid) || datos;
+      dibujarFormUsuario(u, uid);
+    });
+    wrap.innerHTML = `<p style="color:#9A9A9A;">Cargando…</p>`;
+  } else {
+    dibujarFormUsuario(datos, null);
+  }
+}
+
+function dibujarFormUsuario(u, uid) {
+  const wrap = document.getElementById('formUsuarioWrap');
+  if (!wrap) return;
+  const editando = !!uid;
+  wrap.innerHTML = `
+    <div style="background:#1E1E1E;border:1px solid #3A3A3A;border-radius:8px;padding:1rem;margin-bottom:1rem;">
+      <h4 style="color:#C9A84C;margin-bottom:.75rem;">${editando ? 'Editar usuario' : 'Nuevo usuario'}</h4>
+      <div class="grid g2" style="gap:.75rem;">
+        <div><label>Nombre completo</label><input type="text" id="fu_nombre" value="${u.nombre || ''}"></div>
+        <div>
+          <label>Correo${editando ? ' (no se puede cambiar)' : ''}</label>
+          <input type="email" id="fu_email" value="${u.email || ''}" ${editando ? 'disabled' : ''} placeholder="usuario@aurea.local">
+        </div>
+        ${!editando ? `<div><label>Contraseña temporal</label><input type="text" id="fu_password" placeholder="mínimo 6 caracteres"></div>` : ''}
+        <div>
+          <label>Rol</label>
+          <select id="fu_rol">
+            <option value="cerrador" ${u.rol !== 'admin' ? 'selected' : ''}>Cerrador (ve solo sus clientes)</option>
+            <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin (ve y administra todo)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn-guardar" onclick="guardarUsuario(${editando ? `'${uid}'` : 'null'})">💾 Guardar</button>
+        <button class="btn-cancelar" onclick="document.getElementById('formUsuarioWrap').innerHTML=''">Cancelar</button>
+      </div>
+      <div id="fu_error" style="color:#e05252;font-size:.8rem;margin-top:.5rem;"></div>
+    </div>`;
+}
+
+async function guardarUsuario(uid) {
+  const nombre = document.getElementById('fu_nombre')?.value.trim();
+  const email  = document.getElementById('fu_email')?.value.trim();
+  const rol    = document.getElementById('fu_rol')?.value;
+  const errEl  = document.getElementById('fu_error');
+  if (errEl) errEl.textContent = '';
+
+  if (!nombre) { if (errEl) errEl.textContent = 'Escribe el nombre.'; return; }
+
+  try {
+    if (uid) {
+      await actualizarUsuario(uid, nombre, rol);
+      mostrarToast('✅ Usuario actualizado.');
+    } else {
+      const password = document.getElementById('fu_password')?.value;
+      if (!email) { if (errEl) errEl.textContent = 'Escribe el correo.'; return; }
+      if (!password || password.length < 6) { if (errEl) errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
+      await crearUsuario(email, password, nombre, rol);
+      mostrarToast('✅ Usuario creado.');
+    }
+    renderUsuarios();
+  } catch (e) {
+    console.error('Error guardando usuario:', e);
+    let msg = 'No se pudo guardar. Intenta de nuevo.';
+    if (e.code === 'auth/email-already-in-use') msg = 'Ese correo ya está registrado.';
+    else if (e.code === 'auth/invalid-email') msg = 'Correo no válido.';
+    if (errEl) errEl.textContent = msg;
+  }
+}
+
+function confirmarRevocarAcceso(uid, nombre) {
+  idEliminar = null; // no reutilizamos el modal de clientes, hacemos confirm nativo simple
+  if (!confirm(`¿Revocar el acceso de "${nombre}"? Ya no podrá entrar a la calculadora.`)) return;
+  revocarAccesoUsuario(uid)
+    .then(() => { mostrarToast('🚫 Acceso revocado.'); renderUsuarios(); })
+    .catch(e => { console.error(e); mostrarToast('⚠️ No se pudo revocar el acceso.'); });
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1043,9 +1248,22 @@ function leerForm() {
 
   if (editandoId) {
     const idx = clientes.findIndex(c => c.id === editandoId);
+    const anterior = clientes[idx];
     datos.id = editandoId;
-    datos.creadoPorUid = clientes[idx]?.creadoPorUid || usuarioActual?.uid || null;
-    datos.creadoPorNombre = clientes[idx]?.creadoPorNombre || usuarioActual?.nombre || null;
+    datos.creadoPorUid = anterior?.creadoPorUid || usuarioActual?.uid || null;
+    datos.creadoPorNombre = anterior?.creadoPorNombre || usuarioActual?.nombre || null;
+
+    const cambios = calcularCambios(anterior, datos);
+    datos.Bitacora = Array.isArray(anterior?.Bitacora) ? anterior.Bitacora.slice() : [];
+    if (cambios.length) {
+      datos.Bitacora.unshift({
+        accion: 'Edición',
+        fecha: new Date().toLocaleString('es-MX'),
+        por: usuarioActual?.nombre || 'Desconocido',
+        cambios
+      });
+    }
+
     clientes[idx] = datos;
     guardarDatos(clientes);
     guardarClienteEnServidor(datos);
@@ -1311,7 +1529,17 @@ ${c.Nota ? `
           <div class="sc-header">🗂️ Bitácora de acciones</div>
           <div class="sc-body">
             <table class="detail-table">
-              ${c.Bitacora.map(b => `<tr><th>${b.fecha}</th><td>${b.accion}</td></tr>`).join('')}
+              ${c.Bitacora.map(b => `
+                <tr>
+                  <th style="white-space:nowrap;vertical-align:top;">${b.fecha}</th>
+                  <td>
+                    ${b.accion}${b.por ? ` — <span style="color:#9A9A9A;">${b.por}</span>` : ''}
+                    ${Array.isArray(b.cambios) && b.cambios.length ? `
+                      <div style="margin-top:.3rem;font-size:.8rem;color:#9A9A9A;">
+                        ${b.cambios.map(ch => `${ch.campo}: <span style="color:#c66;">${ch.antes}</span> → <span style="color:#6c6;">${ch.despues}</span>`).join('<br>')}
+                      </div>` : ''}
+                  </td>
+                </tr>`).join('')}
             </table>
           </div>
         </div>` : ''}
@@ -1473,6 +1701,24 @@ function registrarAccion(id, accion) {
   c.Bitacora.unshift({ accion, fecha: new Date().toLocaleString('es-MX') });
   guardarDatos(clientes);
   guardarClienteEnServidor(c);
+}
+
+// Compara los datos de un cliente antes y después de una edición,
+// y regresa la lista de campos que cambiaron (para la bitácora).
+function calcularCambios(anterior, nuevo) {
+  if (!anterior) return [];
+  const camposIgnorar = new Set(['id', 'Bitacora', 'creadoPorUid', 'creadoPorNombre', 'FECHACAPTURA']);
+  const cambios = [];
+  const claves = new Set([...Object.keys(anterior), ...Object.keys(nuevo)]);
+  claves.forEach(k => {
+    if (camposIgnorar.has(k) || k.startsWith('_')) return;
+    const a = anterior[k], b = nuevo[k];
+    if (typeof a === 'object' || typeof b === 'object') return; // no comparamos PlanA/PlanB/PlanC anidados
+    const av = (a ?? '').toString().trim();
+    const bv = (b ?? '').toString().trim();
+    if (av !== bv) cambios.push({ campo: k, antes: av || '—', despues: bv || '—' });
+  });
+  return cambios;
 }
 
 function imprimirCliente(id) {

@@ -24,6 +24,7 @@
     <button class="btn-menu-movil" onclick="toggleMenuMovil()">☰</button>
     <button id="btnVista" class="active" onclick="mostrarVista('lista')">Clientes</button>
     <button onclick="mostrarVista('form'); modoNuevo()">+ Nuevo</button>
+    <button id="btnUsuarios" style="display:none;" onclick="renderUsuarios()">👥 Usuarios</button>
     <button onclick="cerrarSesion()" title="Cerrar sesión">🚪</button>
   </div>
 </header>
@@ -31,7 +32,7 @@
 <!-- ═══════════════════════════════════════════════
      LOGIN
      ═══════════════════════════════════════════════ -->
-<div id="loginOverlay" style="display:flex; min-height:70vh; align-items:center; justify-content:center; padding:2rem;">
+<div id="loginOverlay" style="display:flex; flex:1; align-items:center; justify-content:center; padding:2rem 1rem;">
   <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:12px; padding:2rem; max-width:340px; width:100%;">
     <h3 style="color:#C9A84C; margin-bottom:1.25rem; text-align:center;">Iniciar sesión</h3>
     <div style="display:flex; flex-direction:column; gap:.85rem;">
