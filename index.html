@@ -22,17 +22,7 @@
   <div class="nav-btns" style="display:none;">
     <button class="btn-menu-movil" onclick="toggleMenuMovil()">☰</button>
 
-    <!-- Escritorio: barra normal -->
-    <div class="nav-desktop">
-      <span id="usuarioNombreDesktop" class="usuario-info"></span>
-      <button id="btnVistaDesktop" class="active" onclick="mostrarVista('lista')">Clientes</button>
-      <button onclick="mostrarVista('form'); modoNuevo()">+ Nuevo</button>
-      <button id="btnUsuariosDesktop" style="display:none;" onclick="renderUsuarios()">👥 Usuarios</button>
-      <button onclick="abrirCambiarPassword()" title="Cambiar contraseña">🔑</button>
-      <button onclick="cerrarSesion()" title="Cerrar sesión">🚪</button>
-    </div>
-
-    <!-- Tablet / celular: menú desplegable desde el nombre -->
+    <!-- Menú desplegable desde el nombre — igual en cualquier tamaño de pantalla -->
     <div class="user-menu">
       <button class="user-menu-toggle" onclick="toggleUserMenu()">
         <span id="usuarioNombreMobile"></span><span class="chevron">▾</span>

@@ -297,16 +297,12 @@ function iniciarSincronizacionTiempoReal() {
 
 function actualizarNombreHeader() {
   const texto = usuarioActual ? `${usuarioActual.nombre} (${usuarioActual.rol === 'admin' ? 'admin' : 'cerrador'})` : '';
-  const elDesktop = document.getElementById('usuarioNombreDesktop');
-  const elMobile  = document.getElementById('usuarioNombreMobile');
-  if (elDesktop) elDesktop.textContent = texto;
-  if (elMobile)  elMobile.textContent  = texto;
+  const elMobile = document.getElementById('usuarioNombreMobile');
+  if (elMobile) elMobile.textContent = texto;
 
   const esAdmin = usuarioActual?.rol === 'admin';
-  const btnUsuariosDesktop = document.getElementById('btnUsuariosDesktop');
-  const btnUsuariosMobile  = document.getElementById('btnUsuariosMobile');
-  if (btnUsuariosDesktop) btnUsuariosDesktop.style.display = esAdmin ? 'inline-block' : 'none';
-  if (btnUsuariosMobile)  btnUsuariosMobile.style.display  = esAdmin ? 'block' : 'none';
+  const btnUsuariosMobile = document.getElementById('btnUsuariosMobile');
+  if (btnUsuariosMobile) btnUsuariosMobile.style.display = esAdmin ? 'block' : 'none';
 }
 
 function toggleUserMenu() {
@@ -677,7 +673,6 @@ function mostrarToast(msg) {
 // NAVEGACIÓN
 // ─────────────────────────────────────────────────────────────
 function mostrarVista(v) {
-  document.getElementById('btnVistaDesktop')?.classList.toggle('active', v === 'lista');
   if (v === 'lista') renderWelcome();
   else if (v === 'form') renderForm();
 }
