@@ -108,15 +108,19 @@ function ocultarLogin() {
   if (navBtns) navBtns.style.display = 'flex';
 }
 
+let _loginManualEnCurso = false;
+
 async function iniciarSesion() {
   const email = (document.getElementById('loginEmail')?.value || '').trim();
   const pass  = document.getElementById('loginPass')?.value || '';
   if (!email || !pass) { mostrarLogin('Escribe tu correo y contraseña.'); return; }
   try {
+    _loginManualEnCurso = true;
     await firebase.auth().signInWithEmailAndPassword(email, pass);
     // El resto lo maneja onAuthStateChanged
   } catch (e) {
     console.error('Error de inicio de sesión:', e);
+    _loginManualEnCurso = false;
     mostrarLogin('Correo o contraseña incorrectos.');
   }
 }
@@ -150,11 +154,27 @@ function cerrarSesion() {
 }
 
 // ── Cierre de sesión automático por inactividad ────────────────
-const INACTIVIDAD_AVISO_MS  = 14 * 60 * 1000; // avisa 1 minuto antes
-const INACTIVIDAD_LOGOUT_MS = 15 * 60 * 1000; // cierra sesión a los 15 min
+const INACTIVIDAD_AVISO_MS   = 14 * 60 * 1000; // avisa 1 minuto antes
+const INACTIVIDAD_LOGOUT_MS  = 15 * 60 * 1000; // cierra sesión a los 15 min
+const INACTIVIDAD_STORAGE_KEY = 'aurea_ultima_actividad';
 let _timerAvisoInactividad = null;
 let _timerLogoutInactividad = null;
 let _ultimaActividad = 0;
+
+// Guardamos la hora en localStorage (no solo en memoria) para que el
+// conteo sobreviva aunque se cierre el navegador o la pestaña por
+// completo — así, si alguien deja la sesión abierta en el celular y
+// no vuelve a entrar hasta el día siguiente, al regresar detectamos
+// que pasó más de 15 minutos y cerramos la sesión de inmediato.
+function guardarUltimaActividad() {
+  try { localStorage.setItem(INACTIVIDAD_STORAGE_KEY, String(Date.now())); } catch {}
+}
+function tiempoInactivoGuardadoMs() {
+  try {
+    const guardado = parseInt(localStorage.getItem(INACTIVIDAD_STORAGE_KEY) || '0', 10);
+    return guardado ? Date.now() - guardado : 0;
+  } catch { return 0; }
+}
 
 function reiniciarInactividad() {
   if (!usuarioActual) return;
@@ -179,14 +199,22 @@ function detenerInactividad() {
 }
 
 function seguirConectado() {
+  guardarUltimaActividad();
   reiniciarInactividad();
 }
 
+// Una vez que el aviso ya está en pantalla, solo el botón "Seguir
+// conectado" cuenta — mover el mouse o hacer scroll sin querer ya
+// no lo cancela (más seguro: evita que alguien deje la sesión
+// abierta pensando que se cerró, solo porque el mouse se movió).
 function _marcarActividad() {
   if (!usuarioActual) return;
+  const avisoVisible = document.getElementById('overlayInactividad')?.classList.contains('show');
+  if (avisoVisible) return;
   const ahora = Date.now();
   if (ahora - _ultimaActividad < 5000) return; // no reiniciar más de una vez cada 5s
   _ultimaActividad = ahora;
+  guardarUltimaActividad();
   reiniciarInactividad();
 }
 ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll', 'click'].forEach(evento => {
@@ -386,6 +414,22 @@ async function iniciarFirebase() {
         return;
       }
       try {
+        // Si ya pasaron 15+ minutos desde la última actividad registrada
+        // (por ejemplo, se cerró el navegador con la sesión abierta y
+        // volvió al día siguiente), cerramos la sesión de inmediato en
+        // vez de dejar entrar directo — el contador en memoria no
+        // alcanza a detectar esto porque se detiene junto con la página.
+        // No aplica si la persona acaba de escribir su contraseña ahora
+        // mismo: eso siempre debe funcionar, sin importar cuánto tiempo
+        // haya pasado desde la última vez que usó la calculadora.
+        const fueLoginManual = _loginManualEnCurso;
+        _loginManualEnCurso = false;
+        if (!fueLoginManual && tiempoInactivoGuardadoMs() > INACTIVIDAD_LOGOUT_MS) {
+          _mensajeLogoutPendiente = 'Tu sesión se cerró por inactividad.';
+          await firebase.auth().signOut();
+          return;
+        }
+
         const perfil = await cargarPerfilUsuario(user.uid);
         usuarioActual = {
           uid: user.uid,
@@ -393,6 +437,7 @@ async function iniciarFirebase() {
           nombre: perfil.nombre || user.email,
           rol: perfil.rol === 'admin' ? 'admin' : 'cerrador'
         };
+        guardarUltimaActividad();
         ocultarLogin();
         actualizarNombreHeader();
         renderWelcome();
