@@ -141,10 +141,57 @@ async function recuperarPassword() {
   }
 }
 
+let _mensajeLogoutPendiente = null;
+
 function cerrarSesion() {
+  detenerInactividad();
   if (_unsubClientes) { _unsubClientes(); _unsubClientes = null; }
   firebase.auth().signOut();
 }
+
+// ── Cierre de sesión automático por inactividad ────────────────
+const INACTIVIDAD_AVISO_MS  = 14 * 60 * 1000; // avisa 1 minuto antes
+const INACTIVIDAD_LOGOUT_MS = 15 * 60 * 1000; // cierra sesión a los 15 min
+let _timerAvisoInactividad = null;
+let _timerLogoutInactividad = null;
+let _ultimaActividad = 0;
+
+function reiniciarInactividad() {
+  if (!usuarioActual) return;
+  document.getElementById('overlayInactividad')?.classList.remove('show');
+  if (_timerAvisoInactividad)  clearTimeout(_timerAvisoInactividad);
+  if (_timerLogoutInactividad) clearTimeout(_timerLogoutInactividad);
+  _timerAvisoInactividad = setTimeout(() => {
+    document.getElementById('overlayInactividad')?.classList.add('show');
+  }, INACTIVIDAD_AVISO_MS);
+  _timerLogoutInactividad = setTimeout(() => {
+    _mensajeLogoutPendiente = 'Tu sesión se cerró por inactividad.';
+    cerrarSesion();
+  }, INACTIVIDAD_LOGOUT_MS);
+}
+
+function detenerInactividad() {
+  if (_timerAvisoInactividad)  clearTimeout(_timerAvisoInactividad);
+  if (_timerLogoutInactividad) clearTimeout(_timerLogoutInactividad);
+  _timerAvisoInactividad = null;
+  _timerLogoutInactividad = null;
+  document.getElementById('overlayInactividad')?.classList.remove('show');
+}
+
+function seguirConectado() {
+  reiniciarInactividad();
+}
+
+function _marcarActividad() {
+  if (!usuarioActual) return;
+  const ahora = Date.now();
+  if (ahora - _ultimaActividad < 5000) return; // no reiniciar más de una vez cada 5s
+  _ultimaActividad = ahora;
+  reiniciarInactividad();
+}
+['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll', 'click'].forEach(evento => {
+  document.addEventListener(evento, _marcarActividad, { passive: true });
+});
 
 // ── Cambiar contraseña (cualquier usuario, la suya propia) ────
 function abrirCambiarPassword() {
@@ -332,8 +379,10 @@ async function iniciarFirebase() {
       if (!user) {
         usuarioActual = null;
         clientes = [];
+        detenerInactividad();
         renderLista();
-        mostrarLogin();
+        mostrarLogin(_mensajeLogoutPendiente);
+        _mensajeLogoutPendiente = null;
         return;
       }
       try {
@@ -347,6 +396,7 @@ async function iniciarFirebase() {
         ocultarLogin();
         actualizarNombreHeader();
         renderWelcome();
+        reiniciarInactividad();
         await migrarClientesLocalesSiHaceFalta();
         iniciarSincronizacionTiempoReal();
       } catch (e) {
