@@ -363,6 +363,7 @@ function iniciarSincronizacionTiempoReal() {
       clientes = remotos;
       guardarDatos(clientes); // respaldo local por si se pierde la conexión
       renderLista();
+      if (_enPantallaInicio) renderInicio();
     },
     (err) => {
       console.error('Error de sincronización en tiempo real:', err);
@@ -440,7 +441,7 @@ async function iniciarFirebase() {
         guardarUltimaActividad();
         ocultarLogin();
         actualizarNombreHeader();
-        renderWelcome();
+        renderInicio();
         reiniciarInactividad();
         await migrarClientesLocalesSiHaceFalta();
         iniciarSincronizacionTiempoReal();
@@ -768,6 +769,7 @@ function mostrarToast(msg) {
 // NAVEGACIÓN
 // ─────────────────────────────────────────────────────────────
 function mostrarVista(v) {
+  _enPantallaInicio = false;
   if (v === 'lista') renderWelcome();
   else if (v === 'form') renderForm();
 }
@@ -809,6 +811,118 @@ function setActiveLi(id) {
 // ─────────────────────────────────────────────────────────────
 // PANTALLA DE BIENVENIDA
 // ─────────────────────────────────────────────────────────────
+// Revisa que un cliente tenga los datos clave completos; regresa
+// la lista de lo que le falta (vacío si está todo bien).
+function detectarAlertasCliente(c) {
+  const faltantes = [];
+  if (!c.CLIENTE)    faltantes.push('nombre');
+  if (!c.NSS)        faltantes.push('NSS');
+  if (!c.CURP)       faltantes.push('CURP');
+  if (!c.Cerrador)   faltantes.push('cerrador');
+  if (!c.EMPLEADO)   faltantes.push('asesor');
+  if (!c.TelCelular) faltantes.push('teléfono');
+  return faltantes;
+}
+
+let _enPantallaInicio = false;
+
+function renderInicio() {
+  _enPantallaInicio = true;
+  const main = document.getElementById('main');
+  const esAdmin = usuarioActual?.rol === 'admin';
+  const ahora = new Date();
+  const fechaLarga = ahora.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const hora = ahora.getHours();
+  const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const primerNombre = (usuarioActual?.nombre || '').split(' ')[0];
+
+  const totalClientes = clientes.length;
+  const hoyStr = ahora.toLocaleDateString('es-MX');
+  const registradosHoy = clientes.filter(c => c.FECHACAPTURA === hoyStr).length;
+
+  // Clientes por cerrador — solo el admin lo ve
+  let porCerradorHTML = '';
+  if (esAdmin) {
+    const conteo = {};
+    clientes.forEach(c => {
+      const nombre = c.creadoPorNombre || 'Sin asignar';
+      conteo[nombre] = (conteo[nombre] || 0) + 1;
+    });
+    const filas = Object.entries(conteo).sort((a, b) => b[1] - a[1]);
+    porCerradorHTML = filas.length ? `
+      <div class="section-card" style="margin-top:1.5rem;">
+        <div class="sc-header">👥 Clientes por cerrador</div>
+        <div class="sc-body">
+          ${filas.map(([nombre, n]) => `
+            <div style="display:flex; justify-content:space-between; padding:.5rem 0; border-bottom:1px solid #2A2A2A;">
+              <span>${nombre}</span><span style="color:#C9A84C; font-weight:600;">${n}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : '';
+  }
+
+  // Actividad reciente combinada (de todos los clientes visibles)
+  const actividad = [];
+  clientes.forEach(c => {
+    (c.Bitacora || []).forEach(b => actividad.push({ ...b, cliente: c.CLIENTE, clienteId: c.id }));
+  });
+  actividad.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  const actividadReciente = actividad.slice(0, 8);
+
+  // Alertas de datos faltantes
+  const alertas = [];
+  clientes.forEach(c => {
+    const faltantes = detectarAlertasCliente(c);
+    if (faltantes.length) alertas.push({ cliente: c.CLIENTE, clienteId: c.id, faltantes });
+  });
+
+  main.innerHTML = `
+    <div style="max-width:760px; margin:1.5rem auto; padding:0 1rem;">
+      <div style="text-align:center; margin-bottom:2rem;">
+        <img src="logo-aurea.jpeg" alt="Áurea" style="width:72px; height:72px; border-radius:50%; margin-bottom:1rem; border:2px solid var(--dorado); object-fit:cover;">
+        <h2 style="color:#F2EEE6; font-size:1.5rem;">${saludo}, ${primerNombre}</h2>
+        <p style="color:#9A9A9A; text-transform:capitalize;">${fechaLarga}</p>
+      </div>
+
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:10px; padding:1rem 1.5rem; min-width:140px; text-align:center;">
+          <div style="font-size:1.6rem; font-weight:700; color:#C9A84C;">${totalClientes}</div>
+          <div style="font-size:.78rem; color:#9A9A9A;">${esAdmin ? 'clientes en total' : 'tus clientes'}</div>
+        </div>
+        <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:10px; padding:1rem 1.5rem; min-width:140px; text-align:center;">
+          <div style="font-size:1.6rem; font-weight:700; color:#C9A84C;">${registradosHoy}</div>
+          <div style="font-size:.78rem; color:#9A9A9A;">registrados hoy</div>
+        </div>
+      </div>
+
+      ${porCerradorHTML}
+
+      ${alertas.length ? `
+      <div class="section-card" style="margin-top:1.5rem;">
+        <div class="sc-header">⚠️ Datos por revisar</div>
+        <div class="sc-body">
+          ${alertas.slice(0, 6).map(a => `
+            <div onclick="verDetalle(${a.clienteId})" style="cursor:pointer; padding:.5rem 0; border-bottom:1px solid #2A2A2A;">
+              <span style="color:#fff;">${a.cliente || '(Sin nombre)'}</span>
+              <span style="color:#e0a852; font-size:.8rem;"> — falta ${a.faltantes.join(', ')}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${actividadReciente.length ? `
+      <div class="section-card" style="margin-top:1.5rem;">
+        <div class="sc-header">🕓 Actividad reciente</div>
+        <div class="sc-body">
+          ${actividadReciente.map(a => `
+            <div onclick="verDetalle(${a.clienteId})" style="cursor:pointer; padding:.5rem 0; border-bottom:1px solid #2A2A2A; font-size:.85rem;">
+              <span style="color:#fff;">${a.accion}</span>
+              <span style="color:#9A9A9A;"> — ${a.cliente || '(Sin nombre)'}${a.por ? ' · ' + a.por : ''} · ${a.fecha}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+    </div>`;
+}
+
 function renderWelcome() {
   const main = document.getElementById('main');
   if (!clientes.length) {
@@ -827,11 +941,7 @@ function renderWelcome() {
         <button class="btn-guardar" onclick="mostrarVista('form'); modoNuevo()">+ Agregar primer cliente</button>
       </div>`;
   } else {
-    const totalClientes = clientes.length;
-    const hoy = new Date().toLocaleDateString('es-MX');
-    const registradosHoy = clientes.filter(c => c.FECHACAPTURA === hoy).length;
-    const esAdminActual = usuarioActual?.rol === 'admin';
-    const recientes = clientes.slice(0, 5);
+    const recientes = clientes.slice(0, 8);
 
     main.innerHTML = `
       <div class="welcome" style="max-width:640px;">
@@ -840,19 +950,8 @@ function renderWelcome() {
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/>
           </svg>
         </div>
-        <h2>${esAdminActual ? 'Resumen general' : 'Tu resumen'}</h2>
+        <h2>Selecciona un cliente</h2>
         <p>Elige un cliente de la lista para ver su detalle, o agrega uno nuevo.</p>
-
-        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin:1.25rem 0;">
-          <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:10px; padding:1rem 1.5rem; min-width:140px;">
-            <div style="font-size:1.6rem; font-weight:700; color:#C9A84C;">${totalClientes}</div>
-            <div style="font-size:.78rem; color:#9A9A9A;">${esAdminActual ? 'clientes en total' : 'tus clientes'}</div>
-          </div>
-          <div style="background:#1E1E1E; border:1px solid #2A2A2A; border-radius:10px; padding:1rem 1.5rem; min-width:140px;">
-            <div style="font-size:1.6rem; font-weight:700; color:#C9A84C;">${registradosHoy}</div>
-            <div style="font-size:.78rem; color:#9A9A9A;">registrados hoy</div>
-          </div>
-        </div>
 
         <button class="btn-guardar" onclick="mostrarVista('form'); modoNuevo()">+ Nuevo cliente</button>
 
@@ -875,6 +974,7 @@ function renderWelcome() {
 // GESTIÓN DE USUARIOS (solo admin)
 // ─────────────────────────────────────────────────────────────
 async function renderUsuarios() {
+  _enPantallaInicio = false;
   if (usuarioActual?.rol !== 'admin') { renderWelcome(); return; }
   const main = document.getElementById('main');
   main.innerHTML = `<div class="welcome"><p style="color:#9A9A9A;">Cargando usuarios…</p></div>`;
@@ -1428,6 +1528,7 @@ function leerForm() {
       datos.Bitacora.unshift({
         accion: 'Edición',
         fecha: new Date().toLocaleString('es-MX'),
+        ts: Date.now(),
         por: usuarioActual?.nombre || 'Desconocido',
         cambios
       });
@@ -1612,6 +1713,7 @@ function documentoHTML(c) {
 
 
 function verDetalle(id) {
+  _enPantallaInicio = false;
   const c = clientes.find(x => x.id === id);
   if (!c) return;
   setActiveLi(id);
@@ -1867,7 +1969,7 @@ function registrarAccion(id, accion) {
   const c = clientes.find(x => x.id === id);
   if (!c) return;
   if (!Array.isArray(c.Bitacora)) c.Bitacora = [];
-  c.Bitacora.unshift({ accion, fecha: new Date().toLocaleString('es-MX') });
+  c.Bitacora.unshift({ accion, fecha: new Date().toLocaleString('es-MX'), ts: Date.now(), por: usuarioActual?.nombre || null });
   guardarDatos(clientes);
   guardarClienteEnServidor(c);
 }

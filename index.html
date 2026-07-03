@@ -28,6 +28,7 @@
         <span id="usuarioNombreMobile"></span><span class="chevron">▾</span>
       </button>
       <div class="user-menu-dropdown" id="userMenuDropdown">
+        <button onclick="renderInicio(); cerrarUserMenu()">🏠 Inicio</button>
         <button onclick="mostrarVista('lista'); cerrarUserMenu()">📋 Clientes</button>
         <button onclick="mostrarVista('form'); modoNuevo(); cerrarUserMenu()">➕ Nuevo cliente</button>
         <button id="btnUsuariosMobile" style="display:none;" onclick="renderUsuarios(); cerrarUserMenu()">👥 Usuarios</button>
