@@ -95,6 +95,8 @@ function mostrarLogin(mensajeError) {
   if (navBtns) navBtns.style.display = 'none';
   const errEl = document.getElementById('loginError');
   if (errEl) errEl.textContent = mensajeError || '';
+  const okEl = document.getElementById('loginRecuperado');
+  if (okEl) okEl.textContent = '';
 }
 
 function ocultarLogin() {
@@ -119,9 +121,63 @@ async function iniciarSesion() {
   }
 }
 
+async function recuperarPassword() {
+  const email = (document.getElementById('loginEmail')?.value || '').trim();
+  const errEl = document.getElementById('loginError');
+  const okEl  = document.getElementById('loginRecuperado');
+  if (errEl) errEl.textContent = '';
+  if (okEl)  okEl.textContent  = '';
+
+  if (!email) {
+    if (errEl) errEl.textContent = 'Primero escribe tu correo arriba, y luego dale clic aquí.';
+    return;
+  }
+  try {
+    await firebase.auth().sendPasswordResetEmail(email);
+    if (okEl) okEl.textContent = '📩 Listo, revisa tu correo (y la carpeta de spam) para poner una contraseña nueva.';
+  } catch (e) {
+    console.error('Error enviando correo de recuperación:', e);
+    if (errEl) errEl.textContent = 'No se pudo enviar el correo. Verifica que esté bien escrito.';
+  }
+}
+
 function cerrarSesion() {
   if (_unsubClientes) { _unsubClientes(); _unsubClientes = null; }
   firebase.auth().signOut();
+}
+
+// ── Cambiar contraseña (cualquier usuario, la suya propia) ────
+function abrirCambiarPassword() {
+  document.getElementById('pwActual').value = '';
+  document.getElementById('pwNueva').value = '';
+  document.getElementById('pwError').textContent = '';
+  document.getElementById('overlayPassword')?.classList.add('show');
+}
+function cerrarCambiarPassword() {
+  document.getElementById('overlayPassword')?.classList.remove('show');
+}
+async function guardarNuevaPassword() {
+  const actual = document.getElementById('pwActual')?.value || '';
+  const nueva  = document.getElementById('pwNueva')?.value || '';
+  const errEl  = document.getElementById('pwError');
+  if (errEl) errEl.textContent = '';
+
+  if (!actual) { if (errEl) errEl.textContent = 'Escribe tu contraseña actual.'; return; }
+  if (!nueva || nueva.length < 6) { if (errEl) errEl.textContent = 'La contraseña nueva debe tener al menos 6 caracteres.'; return; }
+
+  try {
+    const user = firebase.auth().currentUser;
+    const cred = firebase.auth.EmailAuthProvider.credential(user.email, actual);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(nueva);
+    cerrarCambiarPassword();
+    mostrarToast('✅ Contraseña actualizada.');
+  } catch (e) {
+    console.error('Error cambiando contraseña:', e);
+    let msg = 'No se pudo cambiar la contraseña. Intenta de nuevo.';
+    if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Tu contraseña actual no es correcta.';
+    if (errEl) errEl.textContent = msg;
+  }
 }
 
 async function cargarPerfilUsuario(uid) {
@@ -240,13 +296,34 @@ function iniciarSincronizacionTiempoReal() {
 }
 
 function actualizarNombreHeader() {
-  const el = document.getElementById('usuarioNombre');
-  if (el && usuarioActual) {
-    el.textContent = `${usuarioActual.nombre} (${usuarioActual.rol === 'admin' ? 'admin' : 'cerrador'})`;
-  }
-  const btnUsuarios = document.getElementById('btnUsuarios');
-  if (btnUsuarios) btnUsuarios.style.display = usuarioActual?.rol === 'admin' ? 'inline-block' : 'none';
+  const texto = usuarioActual ? `${usuarioActual.nombre} (${usuarioActual.rol === 'admin' ? 'admin' : 'cerrador'})` : '';
+  const elDesktop = document.getElementById('usuarioNombreDesktop');
+  const elMobile  = document.getElementById('usuarioNombreMobile');
+  if (elDesktop) elDesktop.textContent = texto;
+  if (elMobile)  elMobile.textContent  = texto;
+
+  const esAdmin = usuarioActual?.rol === 'admin';
+  const btnUsuariosDesktop = document.getElementById('btnUsuariosDesktop');
+  const btnUsuariosMobile  = document.getElementById('btnUsuariosMobile');
+  if (btnUsuariosDesktop) btnUsuariosDesktop.style.display = esAdmin ? 'inline-block' : 'none';
+  if (btnUsuariosMobile)  btnUsuariosMobile.style.display  = esAdmin ? 'block' : 'none';
 }
+
+function toggleUserMenu() {
+  document.getElementById('userMenuDropdown')?.classList.toggle('show');
+  document.querySelector('.user-menu-toggle')?.classList.toggle('open');
+}
+function cerrarUserMenu() {
+  document.getElementById('userMenuDropdown')?.classList.remove('show');
+  document.querySelector('.user-menu-toggle')?.classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('userMenuDropdown');
+  const toggle = document.querySelector('.user-menu-toggle');
+  if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !toggle?.contains(e.target)) {
+    cerrarUserMenu();
+  }
+});
 
 async function iniciarFirebase() {
   try {
@@ -600,7 +677,7 @@ function mostrarToast(msg) {
 // NAVEGACIÓN
 // ─────────────────────────────────────────────────────────────
 function mostrarVista(v) {
-  document.getElementById('btnVista').classList.toggle('active', v === 'lista');
+  document.getElementById('btnVistaDesktop')?.classList.toggle('active', v === 'lista');
   if (v === 'lista') renderWelcome();
   else if (v === 'form') renderForm();
 }
@@ -731,7 +808,8 @@ async function renderUsuarios() {
         </div>
         <div class="sc-body">
           <div id="formUsuarioWrap"></div>
-          <table class="detail-table" style="width:100%;">
+          <div style="overflow-x:auto;">
+          <table class="detail-table" style="width:100%; min-width:520px;">
             <thead><tr><th style="text-align:left;">Nombre</th><th style="text-align:left;">Correo</th><th style="text-align:left;">Rol</th><th></th></tr></thead>
             <tbody>
               ${usuarios.map(u => `
@@ -746,6 +824,7 @@ async function renderUsuarios() {
                 </tr>`).join('')}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>`;

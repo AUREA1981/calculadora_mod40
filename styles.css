@@ -30,7 +30,8 @@ body {
   font-family: 'Inter', sans-serif;
   background: var(--gris);
   color: var(--texto);
-  min-height: 100vh;
+  min-height: 100vh;   /* respaldo para navegadores viejos */
+  min-height: 100dvh;  /* altura real visible (evita el hueco de la barra de direcciones en móvil) */
   display: flex;
   flex-direction: column;
 }
@@ -79,6 +80,47 @@ header .nav-btns button {
 header .nav-btns button:hover  { background: rgba(255,255,255,.28); }
 header .nav-btns button.active { background: rgba(255,255,255,.3); font-weight: 600; }
 
+.usuario-info {
+  color: var(--dorado);
+  font-size: .85rem;
+  margin-right: .25rem;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.nav-desktop { display: flex; gap: .5rem; align-items: center; }
+
+.user-menu { display: none; position: relative; }
+.user-menu-toggle {
+  display: flex; align-items: center; gap: .4rem;
+  max-width: 220px;
+}
+.user-menu-toggle span:first-child {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.user-menu-toggle .chevron { font-size: .7rem; opacity: .8; transition: transform .15s; }
+.user-menu-toggle.open .chevron { transform: rotate(180deg); }
+
+.user-menu-dropdown {
+  display: none; flex-direction: column;
+  position: absolute; right: 0; top: calc(100% + 8px);
+  background: #1E1E1E; border: 1px solid #3A3A3A; border-radius: 8px;
+  min-width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  overflow: hidden; z-index: 150;
+}
+.user-menu-dropdown.show { display: flex; }
+header .nav-btns .user-menu-dropdown button {
+  background: transparent; border: none; border-radius: 0;
+  color: var(--texto); text-align: left; padding: .7rem 1rem;
+  font-size: .85rem;
+}
+header .nav-btns .user-menu-dropdown button:hover { background: #2A2A2A; }
+
+@media (max-width: 1100px) {
+  .nav-desktop { display: none; }
+  .user-menu { display: block; }
+}
+
 /* ══════════════════════════════════════════════════════════
    LAYOUT PRINCIPAL
    ══════════════════════════════════════════════════════════ */
@@ -109,7 +151,7 @@ aside .aside-header span {
   text-transform: uppercase;
   letter-spacing: .8px;
 }
-aside .btn-nuevo {
+.btn-nuevo {
   background: var(--verde);
   color: #fff;
   border: none;
@@ -120,7 +162,7 @@ aside .btn-nuevo {
   font-family: inherit;
   font-weight: 500;
 }
-aside .btn-nuevo:hover { background: var(--verde-medio); }
+.btn-nuevo:hover { background: var(--verde-medio); }
 
 aside .search-box { padding: 0 .75rem .75rem; }
 aside .search-box input {

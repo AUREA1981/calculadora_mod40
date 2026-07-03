@@ -20,12 +20,31 @@
     </div>
   </div>
   <div class="nav-btns" style="display:none;">
-    <span id="usuarioNombre" style="color:#C9A84C; font-size:.85rem; margin-right:.5rem; align-self:center;"></span>
     <button class="btn-menu-movil" onclick="toggleMenuMovil()">☰</button>
-    <button id="btnVista" class="active" onclick="mostrarVista('lista')">Clientes</button>
-    <button onclick="mostrarVista('form'); modoNuevo()">+ Nuevo</button>
-    <button id="btnUsuarios" style="display:none;" onclick="renderUsuarios()">👥 Usuarios</button>
-    <button onclick="cerrarSesion()" title="Cerrar sesión">🚪</button>
+
+    <!-- Escritorio: barra normal -->
+    <div class="nav-desktop">
+      <span id="usuarioNombreDesktop" class="usuario-info"></span>
+      <button id="btnVistaDesktop" class="active" onclick="mostrarVista('lista')">Clientes</button>
+      <button onclick="mostrarVista('form'); modoNuevo()">+ Nuevo</button>
+      <button id="btnUsuariosDesktop" style="display:none;" onclick="renderUsuarios()">👥 Usuarios</button>
+      <button onclick="abrirCambiarPassword()" title="Cambiar contraseña">🔑</button>
+      <button onclick="cerrarSesion()" title="Cerrar sesión">🚪</button>
+    </div>
+
+    <!-- Tablet / celular: menú desplegable desde el nombre -->
+    <div class="user-menu">
+      <button class="user-menu-toggle" onclick="toggleUserMenu()">
+        <span id="usuarioNombreMobile"></span><span class="chevron">▾</span>
+      </button>
+      <div class="user-menu-dropdown" id="userMenuDropdown">
+        <button onclick="mostrarVista('lista'); cerrarUserMenu()">📋 Clientes</button>
+        <button onclick="mostrarVista('form'); modoNuevo(); cerrarUserMenu()">➕ Nuevo cliente</button>
+        <button id="btnUsuariosMobile" style="display:none;" onclick="renderUsuarios(); cerrarUserMenu()">👥 Usuarios</button>
+        <button onclick="abrirCambiarPassword(); cerrarUserMenu()">🔑 Cambiar contraseña</button>
+        <button onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -46,6 +65,8 @@
       </div>
       <button onclick="iniciarSesion()" style="background:#C9A84C; color:#0D0D0D; font-weight:600; padding:.65rem; border-radius:6px; border:none; cursor:pointer; margin-top:.5rem;">Entrar</button>
       <div id="loginError" style="color:#e05252; font-size:.8rem; text-align:center; min-height:1.2em;"></div>
+      <div id="loginRecuperado" style="color:#6c6; font-size:.8rem; text-align:center; min-height:1.2em;"></div>
+      <button onclick="recuperarPassword()" style="background:none; border:none; color:#9A9A9A; font-size:.8rem; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0;">¿Olvidaste tu contraseña?</button>
     </div>
   </div>
 </div>
@@ -98,6 +119,30 @@
     <div class="modal-btns">
       <button class="btn-confirm-cancel" onclick="cerrarModal()">Cancelar</button>
       <button class="btn-confirm-del"    onclick="confirmarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL — cambiar contraseña
+     ═══════════════════════════════════════════════ -->
+<div class="overlay" id="overlayPassword">
+  <div class="modal" style="text-align:left;">
+    <h3 style="text-align:center;">🔑 Cambiar contraseña</h3>
+    <div style="display:flex; flex-direction:column; gap:.75rem; margin-top:1rem;">
+      <div>
+        <label style="font-size:.8rem; color:#9A9A9A;">Contraseña actual</label>
+        <input type="password" id="pwActual" style="width:100%; padding:.55rem; border-radius:6px; border:1px solid #2A2A2A; background:#141414; color:#fff;">
+      </div>
+      <div>
+        <label style="font-size:.8rem; color:#9A9A9A;">Contraseña nueva</label>
+        <input type="password" id="pwNueva" style="width:100%; padding:.55rem; border-radius:6px; border:1px solid #2A2A2A; background:#141414; color:#fff;" placeholder="mínimo 6 caracteres">
+      </div>
+      <div id="pwError" style="color:#e05252; font-size:.8rem; min-height:1.1em;"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-confirm-cancel" onclick="cerrarCambiarPassword()">Cancelar</button>
+      <button class="btn-confirm-del" style="background:var(--dorado); color:#0D0D0D; border-color:var(--dorado);" onclick="guardarNuevaPassword()">Guardar</button>
     </div>
   </div>
 </div>
